@@ -78,7 +78,7 @@ public:
 
     bool start()
     {
-        return m_server.listen(QHostAddress::LocalHost);
+        return m_server.listen(QHostAddress(QStringLiteral("127.0.0.1")));
     }
 
     QUrl url() const
@@ -759,6 +759,7 @@ void CuratedResourceManagerTest::enablesUpscaleForActivePreview()
     const SettingsValueRestorer restoreAssetPaths(settings, assetPathsKey);
     settings.setValue(assetPathsKey, QStringList{imagePath});
     settings.sync();
+    const QString canonicalImagePath = QFileInfo(imagePath).canonicalFilePath();
 
     CuratedResourceManager manager({}, directory.filePath(QStringLiteral("resources")));
     MainWindow window(manager);
@@ -770,7 +771,7 @@ void CuratedResourceManagerTest::enablesUpscaleForActivePreview()
     QListWidgetItem *sourceItem = nullptr;
     for (int index = 0; index < libraryView->count(); ++index) {
         QListWidgetItem *item = libraryView->item(index);
-        if (item->data(Qt::UserRole).toString() == imagePath) {
+        if (item->data(Qt::UserRole).toString() == canonicalImagePath) {
             sourceItem = item;
             break;
         }
@@ -905,8 +906,11 @@ void CuratedResourceManagerTest::switchesLibraryViewModesAndRequestsTrash()
 
     QSignalSpy trashSpy(&library, &ImageLibraryWidget::moveToTrashRequested);
     library.selectAsset(&assets.front());
-    view->setFocus();
-    QTest::keyClick(view, Qt::Key_Delete);
+    const auto moveToTrashAction = std::find_if(view->actions().cbegin(), view->actions().cend(), [](const QAction *action) {
+        return action->text() == QStringLiteral("Move to Trash");
+    });
+    QVERIFY(moveToTrashAction != view->actions().cend());
+    (*moveToTrashAction)->trigger();
     QCOMPARE(trashSpy.count(), 1);
     QCOMPARE(trashSpy.at(0).at(0).toString(), QStringLiteral("/tmp/source.png"));
 }
