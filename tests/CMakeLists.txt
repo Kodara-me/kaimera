@@ -47,3 +47,7 @@ target_link_libraries(curated-resource-manager-test PRIVATE Qt6::Network Qt6::Te
 
 add_test(NAME curated-resource-manager-test COMMAND curated-resource-manager-test)
 set_tests_properties(curated-resource-manager-test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+add_test(NAME kira-service-installer-test
+         COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/KiraServiceInstallerTest.sh
+                 ${CMAKE_SOURCE_DIR} $<TARGET_FILE:kira-service>)

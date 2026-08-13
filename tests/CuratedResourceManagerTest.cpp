@@ -6,6 +6,7 @@
 #include "ReferenceSlotWidget.h"
 #include "SdCliRunner.h"
 #include "SdCliProgressParser.h"
+#include "ServiceClient.h"
 #include "ServiceProtocol.h"
 #include "StartupPreparationWidget.h"
 #include "UpscaleDialog.h"
@@ -35,6 +36,8 @@
 #include <QStatusBar>
 #include <QToolButton>
 #include <QTabWidget>
+#include <QWebSocket>
+#include <QWebSocketServer>
 #include <QtTest>
 
 #include <algorithm>
@@ -198,6 +201,7 @@ private slots:
     void capturesGenerationProcessResult();
     void parsesGenerationProgressFromSdCliOutput();
     void serializesServiceProgress();
+    void reportsServiceAuthenticationFailure();
     void displaysPreviewAtNativeSize();
     void capturesUpscaleProcessResult();
     void displaysUpscaleDialogResolution();
@@ -690,6 +694,33 @@ void CuratedResourceManagerTest::serializesServiceProgress()
     QCOMPARE(decoded.totalSteps, original.totalSteps);
     QCOMPARE(decoded.percentage, original.percentage);
     QCOMPARE(decoded.statusText, original.statusText);
+}
+
+void CuratedResourceManagerTest::reportsServiceAuthenticationFailure()
+{
+    QWebSocketServer server(QStringLiteral("test-service"), QWebSocketServer::NonSecureMode);
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    connect(&server, &QWebSocketServer::newConnection, this, [&server] {
+        QWebSocket *socket = server.nextPendingConnection();
+        connect(socket, &QWebSocket::textMessageReceived, socket, [socket](const QString &message) {
+            const QJsonObject request = QJsonDocument::fromJson(message.toUtf8()).object();
+            QCOMPARE(request.value(QStringLiteral("type")).toString(), QStringLiteral("authenticate"));
+            QCOMPARE(request.value(QStringLiteral("token")).toString(), QStringLiteral("incorrect token"));
+            socket->sendTextMessage(QStringLiteral("{\"type\":\"error\",\"code\":\"authentication-failed\",\"message\":\"Authentication failed\"}"));
+            socket->close();
+        });
+    });
+
+    ServiceClient client;
+    client.setConfiguration(QUrl(QStringLiteral("ws://127.0.0.1:%1").arg(server.serverPort())),
+                            QStringLiteral("incorrect token"),
+                            false);
+    QSignalSpy stateSpy(&client, &ServiceClient::serviceStateChanged);
+    client.connectToService();
+    QTRY_VERIFY(std::any_of(stateSpy.cbegin(), stateSpy.cend(), [](const QList<QVariant> &arguments) {
+        return arguments.at(0).toString() == QStringLiteral("authentication-failed")
+               && arguments.at(1).toString().contains(QStringLiteral("shared token"));
+    }));
 }
 
 void CuratedResourceManagerTest::displaysPreviewAtNativeSize()

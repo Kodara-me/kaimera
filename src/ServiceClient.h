@@ -53,4 +53,6 @@ private:
     QString m_outputPath;
     QByteArray m_inputBytes;
     bool m_waitingForResult = false;
+    QString m_connectionFailureState;
+    QString m_connectionFailureMessage;
 };

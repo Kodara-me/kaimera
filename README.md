@@ -53,7 +53,28 @@ It listens only on `127.0.0.1:9384` by default. For a trusted home LAN, create a
 
 Configure the same `ws://host:port` address and token through **Settings → Service Preferences** on each desktop. The token is saved in that desktop user's Qt settings. LAN mode is unencrypted and must not be port-forwarded or used on an untrusted network. Use a private VPN or add TLS in a future deployment slice for remote access.
 
-For unattended use, run the command under a user-level `systemd` service on Linux or a `launchd` LaunchAgent on macOS. Keep the token file readable only by the service user and ensure its environment includes `sd-cli` on `PATH`.
+### Linux system service installation
+
+On a systemd Linux host, build the service and then install it with the root-run installer:
+
+```sh
+cmake --build build --target kira-service
+sudo scripts/install-kira-service.sh --binary build/src/kira-service
+```
+
+The installer prompts for the LAN address, port, and a memorable shared passphrase. It creates a root-managed, boot-enabled `kira-service.service`, but the inference process runs as the restricted `kira-service` account. Models and curated resources live in `/var/lib/kira-service/data/kira-canvas/`; configuration and token files live in `/etc/kira-service/`.
+
+Manage the installed service with:
+
+```sh
+sudo systemctl status kira-service
+sudo systemctl restart kira-service
+sudo systemctl stop kira-service
+sudo systemctl enable --now kira-service
+journalctl -u kira-service -f
+```
+
+The installer validates the generated unit with `systemd-analyze verify` when available and does not change the firewall. Allow the selected TCP port only from the home LAN. To upgrade, rebuild and run the installer again with the new binary. To remove it while retaining model data and configuration, run `sudo scripts/uninstall-kira-service.sh`; add `--purge` to remove those files after an explicit confirmation.
 
 ## Technology
 

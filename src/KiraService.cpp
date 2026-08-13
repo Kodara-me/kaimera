@@ -5,6 +5,7 @@
 #include "ServiceProtocol.h"
 #include "SdCliRunner.h"
 
+#include <QDebug>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
@@ -52,7 +53,8 @@ KiraService::KiraService(KiraServiceConfiguration configuration, QObject *parent
     , m_resources(std::make_unique<CuratedResourceManager>())
 {
     connect(m_resources.get(), &CuratedResourceManager::downloadFinished, this, [this](CuratedResourceId) { updateResourceState(); });
-    connect(m_resources.get(), &CuratedResourceManager::downloadFailed, this, [this](CuratedResourceId, const QString &) {
+    connect(m_resources.get(), &CuratedResourceManager::downloadFailed, this, [this](CuratedResourceId, const QString &errorMessage) {
+        qWarning().noquote() << QStringLiteral("[Kira Service] Resource preparation failed: %1").arg(errorMessage);
         m_resourcesFailed = true;
         updateResourceState();
     });
@@ -80,6 +82,7 @@ void KiraService::initializeResources()
 {
     const QString executable = QStandardPaths::findExecutable(QStringLiteral("sd-cli"));
     if (executable.isEmpty()) {
+        qCritical().noquote() << QStringLiteral("[Kira Service] sd-cli was not found on the service PATH.");
         m_resourcesFailed = true;
         return;
     }
@@ -136,9 +139,11 @@ void KiraService::processTextMessage(QWebSocket *socket, const QString &message)
     if (!m_authenticatedClients.contains(socket)) {
         if (type != QStringLiteral("authenticate") || object.value(QStringLiteral("version")).toInt() != ServiceProtocol::Version
             || (!m_configuration.token.isEmpty() && object.value(QStringLiteral("token")).toString() != m_configuration.token)) {
+            qWarning().noquote() << QStringLiteral("[Kira Service] Rejected authentication from %1.").arg(socket->peerAddress().toString());
             sendError(socket, QStringLiteral("authentication-failed"), tr("Authentication failed")); socket->close(); return;
         }
         m_authenticatedClients.insert(socket, true);
+        qInfo().noquote() << QStringLiteral("[Kira Service] Authenticated client from %1.").arg(socket->peerAddress().toString());
         send(socket, {{QStringLiteral("type"), QStringLiteral("authenticated")}});
         sendCapabilities(socket);
         return;

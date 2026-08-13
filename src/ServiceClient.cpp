@@ -30,10 +30,17 @@ ServiceClient::ServiceClient(QObject *parent)
         m_authenticated = false; m_generationAvailable = false; m_upscaleAvailable = false;
         emit capabilitiesChanged(false, false);
         if (m_jobOperation != JobOperation::None) finish(false, tr("Service connection was closed"));
-        emit serviceStateChanged(QStringLiteral("offline"), tr("Service is unavailable"));
+        const QString state = m_connectionFailureState.isEmpty() ? QStringLiteral("offline") : m_connectionFailureState;
+        const QString message = m_connectionFailureMessage.isEmpty() ? tr("Service connection was closed") : m_connectionFailureMessage;
+        m_connectionFailureState.clear();
+        m_connectionFailureMessage.clear();
+        emit serviceStateChanged(state, message);
     });
     connect(m_socket, &QWebSocket::errorOccurred, this, [this](QAbstractSocket::SocketError) {
-        emit serviceStateChanged(QStringLiteral("offline"), m_socket->errorString());
+        if (m_connectionFailureState.isEmpty()) {
+            m_connectionFailureState = QStringLiteral("connection-error");
+            m_connectionFailureMessage = tr("Could not connect to %1: %2").arg(m_endpoint.toString(), m_socket->errorString());
+        }
     });
 }
 
@@ -53,6 +60,11 @@ void ServiceClient::connectToService()
         emit serviceStateChanged(QStringLiteral("offline"), tr("Enter a valid ws:// or wss:// service address")); return;
     }
     m_authenticated = false;
+    m_connectionFailureState.clear();
+    m_connectionFailureMessage.clear();
+    if (m_socket->state() != QAbstractSocket::UnconnectedState) {
+        m_socket->abort();
+    }
     emit serviceStateChanged(QStringLiteral("connecting"), tr("Connecting to service…"));
     m_socket->open(m_endpoint);
 }
@@ -95,7 +107,27 @@ void ServiceClient::handleTextMessage(const QString &message)
     if (type == QStringLiteral("capabilities")) {
         const QString state = object.value(QStringLiteral("state")).toString(); const QJsonArray operations = object.value(QStringLiteral("operations")).toArray();
         m_generationAvailable = operations.contains(QStringLiteral("image.generate")); m_upscaleAvailable = operations.contains(QStringLiteral("image.upscale"));
-        emit capabilitiesChanged(canGenerate(), canUpscale()); emit serviceStateChanged(state, state == QStringLiteral("ready") ? tr("Service is ready") : (state == QStringLiteral("preparing") ? tr("Service is preparing resources") : tr("Service is unavailable"))); return;
+        const QString statusMessage = state == QStringLiteral("ready")
+                                          ? tr("Service is ready")
+                                          : (state == QStringLiteral("preparing")
+                                                 ? tr("Connected; service is preparing resources")
+                                                 : tr("Connected, but the service backend is unavailable. Check the service journal for sd-cli and resource errors."));
+        emit capabilitiesChanged(canGenerate(), canUpscale());
+        emit serviceStateChanged(state, statusMessage);
+        return;
+    }
+    if (type == QStringLiteral("error")) {
+        const QString errorCode = object.value(QStringLiteral("code")).toString();
+        if (!m_authenticated && errorCode == QStringLiteral("authentication-failed")) {
+            m_connectionFailureState = QStringLiteral("authentication-failed");
+            m_connectionFailureMessage = tr("Service rejected the shared token. Check Service Preferences and save the exact token again.");
+            m_socket->close();
+            return;
+        }
+        if (object.value(QStringLiteral("jobId")).toString() == m_jobId) {
+            finish(false, object.value(QStringLiteral("message")).toString());
+        }
+        return;
     }
     if (object.value(QStringLiteral("jobId")).toString() != m_jobId) return;
     if (type == QStringLiteral("upload-required")) { m_socket->sendBinaryMessage(m_inputBytes); return; }
@@ -105,7 +137,6 @@ void ServiceClient::handleTextMessage(const QString &message)
     if (type == QStringLiteral("queue-position")) { emit serviceStateChanged(QStringLiteral("queued"), tr("Job queued (%1 ahead)").arg(object.value(QStringLiteral("position")).toInt() - 1)); return; }
     if (type == QStringLiteral("running")) { emit serviceStateChanged(QStringLiteral("running"), tr("Processing image…")); return; }
     if (type == QStringLiteral("result")) { m_waitingForResult = true; return; }
-    if (type == QStringLiteral("error")) finish(false, object.value(QStringLiteral("message")).toString());
 }
 
 void ServiceClient::handleBinaryMessage(const QByteArray &data)
