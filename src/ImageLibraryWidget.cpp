@@ -1,5 +1,7 @@
 #include "ImageLibraryWidget.h"
 
+#include "SystemIcon.h"
+
 #include <QAbstractItemDelegate>
 #include <QAbstractItemView>
 #include <QAction>
@@ -38,11 +40,6 @@ constexpr int LibraryListSpacing = 8;
 constexpr int AssetPathRole = Qt::UserRole;
 constexpr int AssetCategoryRole = Qt::UserRole + 1;
 constexpr int AssetImageRole = Qt::UserRole + 2;
-
-QIcon themedIcon(const QString &name, QStyle::StandardPixmap fallback, const QWidget *widget)
-{
-    return QIcon::fromTheme(name, widget->style()->standardIcon(fallback));
-}
 
 QString categoryName(ImageAssetCategory category)
 {
@@ -230,14 +227,14 @@ ImageLibraryWidget::ImageLibraryWidget(const std::deque<ImageAsset> &assets, QWi
     gridButton->setObjectName(QStringLiteral("libraryGridButton"));
     gridButton->setCheckable(true);
     gridButton->setChecked(true);
-    gridButton->setIcon(themedIcon(QStringLiteral("view-grid"), QStyle::SP_FileDialogDetailedView, this));
+    gridButton->setIcon(systemIcon(QStringLiteral("view-grid"), QStyle::SP_FileDialogDetailedView, this));
     gridButton->setToolTip(tr("Grid view"));
     viewModeGroup->addButton(gridButton);
     viewRow->addWidget(gridButton);
     auto *listButton = new QToolButton(this);
     listButton->setObjectName(QStringLiteral("libraryListButton"));
     listButton->setCheckable(true);
-    listButton->setIcon(themedIcon(QStringLiteral("view-list"), QStyle::SP_FileDialogListView, this));
+    listButton->setIcon(systemIcon(QStringLiteral("view-list"), QStyle::SP_FileDialogListView, this));
     listButton->setToolTip(tr("List view"));
     viewModeGroup->addButton(listButton);
     viewRow->addWidget(listButton);
@@ -255,8 +252,12 @@ ImageLibraryWidget::ImageLibraryWidget(const std::deque<ImageAsset> &assets, QWi
     setGridView(true);
 
     auto *moveToTrashAction = new QAction(
-        themedIcon(QStringLiteral("user-trash"), QStyle::SP_DialogDiscardButton, this), tr("Move to Trash"), m_thumbnailView);
+        systemIcon(QStringLiteral("user-trash"), QStyle::SP_DialogDiscardButton, this), tr("Move to Trash"), m_thumbnailView);
+#if defined(Q_OS_MACOS)
+    moveToTrashAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Backspace));
+#else
     moveToTrashAction->setShortcut(QKeySequence::Delete);
+#endif
     moveToTrashAction->setShortcutContext(Qt::WidgetShortcut);
     m_thumbnailView->addAction(moveToTrashAction);
     connect(moveToTrashAction, &QAction::triggered, this, &ImageLibraryWidget::requestMoveToTrash);

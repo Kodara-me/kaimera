@@ -20,6 +20,9 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QMenu>
+#include <QMenuBar>
+#include <QKeySequence>
 #include <QPlainTextEdit>
 #include <QSignalSpy>
 #include <QSettings>
@@ -197,6 +200,7 @@ private slots:
     void capturesUpscaleProcessResult();
     void displaysUpscaleDialogResolution();
     void enablesUpscaleForActivePreview();
+    void providesSharedMainWindowActions();
     void filtersLibraryAssets();
     void switchesLibraryViewModesAndRequestsTrash();
     void displaysPreviewOnlyForAssignedReference();
@@ -786,6 +790,33 @@ void CuratedResourceManagerTest::enablesUpscaleForActivePreview()
     QVERIFY(previewTabs != nullptr);
     previewTabs->tabCloseRequested(0);
     QTRY_VERIFY(!upscaleAction->isEnabled());
+}
+
+void CuratedResourceManagerTest::providesSharedMainWindowActions()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+
+    CuratedResourceManager manager({}, directory.filePath(QStringLiteral("resources")));
+    MainWindow window(manager);
+
+    QMenuBar *menuBar = window.menuBar();
+    QVERIFY(menuBar != nullptr);
+    QCOMPARE(menuBar->actions().size(), 2);
+    QCOMPARE(menuBar->actions().at(0)->text(), QStringLiteral("&File"));
+    QCOMPARE(menuBar->actions().at(1)->text(), QStringLiteral("&Image"));
+
+    const QList<QAction *> fileActions = menuBar->actions().at(0)->menu()->actions();
+    QCOMPARE(fileActions.size(), 2);
+    QCOMPARE(fileActions.at(0)->text(), QStringLiteral("Import Photo"));
+    QCOMPARE(fileActions.at(0)->shortcut(), QKeySequence(QKeySequence::Open));
+    QCOMPARE(fileActions.at(1)->text(), QStringLiteral("Close Preview"));
+    QCOMPARE(fileActions.at(1)->shortcut(), QKeySequence(QKeySequence::Close));
+    QVERIFY(!fileActions.at(1)->isEnabled());
+
+    const QList<QAction *> imageActions = menuBar->actions().at(1)->menu()->actions();
+    QCOMPARE(imageActions.size(), 1);
+    QCOMPARE(imageActions.at(0), window.findChild<QAction *>(QStringLiteral("upscaleAction")));
 }
 
 void CuratedResourceManagerTest::filtersLibraryAssets()

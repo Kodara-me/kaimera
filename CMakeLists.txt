@@ -7,9 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_AUTOMOC ON)
 
-find_package(ECM 6.0 REQUIRED NO_MODULE)
 find_package(Qt6 6.2 REQUIRED COMPONENTS Network Widgets)
-find_package(KF6KIO 6.0 REQUIRED)
 
 include(CTest)
 

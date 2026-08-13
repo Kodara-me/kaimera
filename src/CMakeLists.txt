@@ -27,11 +27,22 @@ add_executable(kira-canvas
     SdCliProgressParser.h
     StartupPreparationWidget.cpp
     StartupPreparationWidget.h
+    SystemIcon.h
     UpscaleDialog.cpp
     UpscaleDialog.h
 )
 
-target_link_libraries(kira-canvas PRIVATE KF6::KIOCore Qt6::Network Qt6::Widgets)
+target_link_libraries(kira-canvas PRIVATE Qt6::Network Qt6::Widgets)
+
+if(APPLE)
+    set_target_properties(kira-canvas PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "Kira Canvas"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.kiracanvas.KiraCanvas"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+    )
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(kira-canvas PRIVATE -Wall -Wextra -Wpedantic)

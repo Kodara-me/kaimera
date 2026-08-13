@@ -3,8 +3,6 @@
 #include "ImageAsset.h"
 
 #include <QMainWindow>
-#include <QSet>
-
 #include <deque>
 
 class ImageLibraryWidget;
@@ -41,6 +39,8 @@ private:
     void moveAssetToTrash(const QString &filePath);
     void removeAssetFromLibrary(const QString &filePath);
     void openImages();
+    void closePreview(int index);
+    void closeCurrentPreview();
     void startGeneration(GenerationRequest request);
     void updateGenerationProgress(const GenerationProgress &progress);
     void hideGenerationProgress();
@@ -56,6 +56,8 @@ private:
 
     std::deque<ImageAsset> m_assets;
     QTabWidget *m_previewTabs = nullptr;
+    QAction *m_importAction = nullptr;
+    QAction *m_closePreviewAction = nullptr;
     QAction *m_upscaleAction = nullptr;
     GeneratePanel *m_generatePanel = nullptr;
     ImageLibraryWidget *m_library = nullptr;
@@ -63,7 +65,6 @@ private:
     SdCliRunner *m_sdCliRunner = nullptr;
     CuratedResourceManager &m_curatedResources;
     QSplitter *m_workspaceSplitter = nullptr;
-    QSet<QString> m_assetsBeingTrashed;
     bool m_generationRunning = false;
     bool m_upscaleRunning = false;
 };

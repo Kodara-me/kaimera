@@ -1,5 +1,7 @@
 #include "ReferenceSlotWidget.h"
 
+#include "SystemIcon.h"
+
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
@@ -25,8 +27,7 @@ ReferenceSlotWidget::ReferenceSlotWidget(const QString &title, QWidget *parent)
     layout->addWidget(new QLabel(m_title, this), 1);
 
     m_assignButton = new QToolButton(this);
-    m_assignButton->setIcon(QIcon::fromTheme(QStringLiteral("list-add"),
-                                              style()->standardIcon(QStyle::SP_FileDialogNewFolder)));
+    m_assignButton->setIcon(systemIcon(QStringLiteral("list-add"), QStyle::SP_FileDialogNewFolder, this));
     m_assignButton->setText(tr("Use Selected"));
     m_assignButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     m_assignButton->setToolTip(tr("Use selected library image"));
@@ -42,8 +43,7 @@ ReferenceSlotWidget::ReferenceSlotWidget(const QString &title, QWidget *parent)
     layout->addWidget(m_assignButton);
 
     m_clearButton = new QToolButton(this);
-    m_clearButton->setIcon(QIcon::fromTheme(QStringLiteral("edit-clear"),
-                                             style()->standardIcon(QStyle::SP_DialogCancelButton)));
+    m_clearButton->setIcon(systemIcon(QStringLiteral("edit-clear"), QStyle::SP_DialogCancelButton, this));
     m_clearButton->setToolTip(tr("Clear %1").arg(m_title));
     connect(m_clearButton, &QToolButton::clicked, this, [this] {
         if (m_assignedAsset == nullptr) {
@@ -97,9 +97,7 @@ void ReferenceSlotWidget::updateDisplay()
     QPixmap placeholder(m_thumbnail->size());
     placeholder.fill(palette().color(QPalette::AlternateBase));
     QPainter painter(&placeholder);
-    const QPixmap icon = QIcon::fromTheme(QStringLiteral("list-add"),
-                                          style()->standardIcon(QStyle::SP_FileDialogNewFolder))
-                             .pixmap(QSize(20, 20));
+    const QPixmap icon = systemIcon(QStringLiteral("list-add"), QStyle::SP_FileDialogNewFolder, this).pixmap(QSize(20, 20));
     painter.drawPixmap((placeholder.width() - icon.width()) / 2,
                        (placeholder.height() - icon.height()) / 2,
                        icon);

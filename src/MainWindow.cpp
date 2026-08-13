@@ -6,18 +6,20 @@
 #include "ImageLibraryWidget.h"
 #include "ImageViewer.h"
 #include "SdCliRunner.h"
+#include "SystemIcon.h"
 #include "UpscaleDialog.h"
 
-#include <KIO/CopyJob>
-#include <KJob>
 #include <QAction>
 #include <QCloseEvent>
 #include <QDateTime>
 #include <QDir>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QImageReader>
 #include <QMessageBox>
+#include <QMenu>
+#include <QMenuBar>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QRandomGenerator>
@@ -30,7 +32,6 @@
 #include <QTabBar>
 #include <QToolBar>
 #include <QTimer>
-#include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -41,11 +42,6 @@
 namespace
 {
 const QString LibraryAssetPathsKey = QStringLiteral("Library/AssetPaths");
-
-QIcon themedIcon(const QString &name, QStyle::StandardPixmap fallback, const QWidget *widget)
-{
-    return QIcon::fromTheme(name, widget->style()->standardIcon(fallback));
-}
 
 QString imageFileDialogFilter()
 {
@@ -87,14 +83,35 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
     setWindowTitle(tr("Kira Canvas"));
     resize(1600, 1000);
 
+#if defined(Q_OS_MACOS)
+    setUnifiedTitleAndToolBarOnMac(true);
+#endif
+
     auto *toolBar = addToolBar(tr("Main"));
     toolBar->setMovable(false);
+#if defined(Q_OS_MACOS)
+    toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+#else
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    auto *importPhotoAction = toolBar->addAction(
-        themedIcon(QStringLiteral("document-open"), QStyle::SP_DialogOpenButton, this), tr("Import Photo"));
-    m_upscaleAction = toolBar->addAction(themedIcon(QStringLiteral("zoom-in"), QStyle::SP_ArrowUp, this), tr("Upscale"));
+#endif
+    m_importAction = new QAction(systemIcon(QStringLiteral("document-open"), QStyle::SP_DialogOpenButton, this),
+                                 tr("Import Photo"),
+                                 this);
+    m_importAction->setShortcut(QKeySequence::Open);
+    m_closePreviewAction = new QAction(tr("Close Preview"), this);
+    m_closePreviewAction->setShortcut(QKeySequence::Close);
+    m_closePreviewAction->setEnabled(false);
+    m_upscaleAction = new QAction(systemIcon(QStringLiteral("zoom-in"), QStyle::SP_ArrowUp, this), tr("Upscale"), this);
     m_upscaleAction->setObjectName(QStringLiteral("upscaleAction"));
     m_upscaleAction->setEnabled(false);
+    toolBar->addAction(m_importAction);
+    toolBar->addAction(m_upscaleAction);
+
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(m_importAction);
+    fileMenu->addAction(m_closePreviewAction);
+    QMenu *imageMenu = menuBar()->addMenu(tr("&Image"));
+    imageMenu->addAction(m_upscaleAction);
 
     m_generationProgressBar = new QProgressBar(statusBar());
     m_generationProgressBar->setRange(0, 100);
@@ -126,7 +143,8 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
     m_workspaceSplitter->setStretchFactor(2, 0);
     setCentralWidget(m_workspaceSplitter);
 
-    connect(importPhotoAction, &QAction::triggered, this, &MainWindow::openImages);
+    connect(m_importAction, &QAction::triggered, this, &MainWindow::openImages);
+    connect(m_closePreviewAction, &QAction::triggered, this, &MainWindow::closeCurrentPreview);
     connect(m_upscaleAction, &QAction::triggered, this, &MainWindow::showUpscaleDialog);
     connect(m_generatePanel, &GeneratePanel::generationRequested, this, &MainWindow::startGeneration);
     connect(m_library, &ImageLibraryWidget::imageSelected, this, [this](const ImageAsset *asset) {
@@ -134,12 +152,7 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
     });
     connect(m_library, &ImageLibraryWidget::imagePreviewRequested, this, &MainWindow::openImagePreview);
     connect(m_library, &ImageLibraryWidget::moveToTrashRequested, this, &MainWindow::moveAssetToTrash);
-    connect(m_previewTabs, &QTabWidget::tabCloseRequested, this, [this](int index) {
-        QWidget *preview = m_previewTabs->widget(index);
-        m_previewTabs->removeTab(index);
-        preview->deleteLater();
-        updateUpscaleAction();
-    });
+    connect(m_previewTabs, &QTabWidget::tabCloseRequested, this, &MainWindow::closePreview);
     connect(m_previewTabs, &QTabWidget::currentChanged, this, [this](int index) {
         if (index < 0) {
             updateUpscaleAction();
@@ -285,6 +298,23 @@ void MainWindow::openImages()
     }
 }
 
+void MainWindow::closePreview(int index)
+{
+    if (index < 0 || index >= m_previewTabs->count()) {
+        return;
+    }
+
+    QWidget *preview = m_previewTabs->widget(index);
+    m_previewTabs->removeTab(index);
+    preview->deleteLater();
+    updateUpscaleAction();
+}
+
+void MainWindow::closeCurrentPreview()
+{
+    closePreview(m_previewTabs->currentIndex());
+}
+
 const ImageAsset *MainWindow::importImage(const QString &filePath)
 {
     QFileInfo fileInfo(filePath);
@@ -354,7 +384,7 @@ void MainWindow::moveAssetToTrash(const QString &filePath)
     const auto asset = std::find_if(m_assets.cbegin(), m_assets.cend(), [&filePath](const ImageAsset &candidate) {
         return candidate.filePath == filePath;
     });
-    if (asset == m_assets.cend() || m_assetsBeingTrashed.contains(filePath)) {
+    if (asset == m_assets.cend()) {
         return;
     }
     const QFileInfo fileInfo(filePath);
@@ -376,23 +406,15 @@ void MainWindow::moveAssetToTrash(const QString &filePath)
         return;
     }
 
-    m_assetsBeingTrashed.insert(filePath);
-    statusBar()->showMessage(tr("Moving %1 to the Trash...").arg(asset->name));
-    KIO::CopyJob *job = KIO::trash(QUrl::fromLocalFile(filePath), KIO::HideProgressInfo);
-    connect(job, &KJob::result, this, [this, filePath](KJob *completedJob) {
-        m_assetsBeingTrashed.remove(filePath);
-        if (completedJob->error() != 0) {
-            statusBar()->showMessage(tr("Could not move image to the Trash: %1").arg(completedJob->errorString()));
-            return;
-        }
+    QFile file(filePath);
+    if (!file.moveToTrash()) {
+        statusBar()->showMessage(tr("Could not move image to the Trash: %1").arg(file.errorString()));
+        return;
+    }
 
-        const auto asset = std::find_if(m_assets.cbegin(), m_assets.cend(), [&filePath](const ImageAsset &candidate) {
-            return candidate.filePath == filePath;
-        });
-        const QString name = asset == m_assets.cend() ? QFileInfo(filePath).fileName() : asset->name;
-        removeAssetFromLibrary(filePath);
-        statusBar()->showMessage(tr("Moved %1 to the Trash").arg(name));
-    });
+    const QString name = asset->name;
+    removeAssetFromLibrary(filePath);
+    statusBar()->showMessage(tr("Moved %1 to the Trash").arg(name));
 }
 
 void MainWindow::removeAssetFromLibrary(const QString &filePath)
@@ -540,6 +562,7 @@ const ImageAsset *MainWindow::activePreviewAsset() const
 void MainWindow::updateUpscaleAction()
 {
     m_upscaleAction->setEnabled(!m_generationRunning && !m_upscaleRunning && activePreviewAsset() != nullptr);
+    m_closePreviewAction->setEnabled(m_previewTabs->currentIndex() >= 0);
 }
 
 void MainWindow::showUpscaleDialog()

@@ -1,10 +1,10 @@
 # Kira Canvas
 
-Kira Canvas is a native Linux/KDE desktop application intended for AI-assisted image generation and editing.
+Kira Canvas is a native Qt desktop application for Linux and macOS, intended for AI-assisted image generation and editing. It follows the active desktop appearance: Qt’s Plasma and GNOME integration on Linux, and the Aqua/Cocoa style on macOS.
 
 ## Status
 
-Images can be imported into the persistent Library with the native Open dialog. The Library stores image paths through Qt settings and restores readable files from their original locations on the next launch. Search matches filenames, and category filters distinguish Generated, Imported, and Upscaled images. The Library offers both icon and list views; selected source images can be moved to the desktop Trash from its context menu or with Delete after confirmation. Library selection drives the optional Generate base image. An active preview tab enables the toolbar’s Upscale action, which offers 2× or 4× scaling and imports the result into the Library. Generation and upscaling run as one-shot local `sd-cli` processes.
+Images can be imported into the persistent Library with the native Open dialog. The Library stores image paths through Qt settings and restores readable files from their original locations on the next launch. Search matches filenames, and category filters distinguish Generated, Imported, and Upscaled images. The Library offers both icon and list views; selected source images can be moved to the desktop Trash from its context menu or with Delete on Linux and Command-Backspace on macOS after confirmation. Library selection drives the optional Generate base image. An active preview tab enables the toolbar’s Upscale action, which offers 2× or 4× scaling and imports the result into the Library. Generation and upscaling run as one-shot local `sd-cli` processes.
 
 Double-click a Library image to open it in a closable preview tab. The workspace remains empty until an image tab is opened.
 
@@ -27,7 +27,7 @@ Generated, modified, and upscaled images are written to their respective directo
 
 ## Storage
 
-Kira Canvas-managed models use `<GenericDataLocation>/kira-canvas/models/`, with upscalers under `models/upscale/`. On many Linux systems the data root is similar to `~/.local/share/kira-canvas/`, but it is resolved with Qt standard paths rather than hard-coded. The current interface does not provide an in-app model installer.
+Kira Canvas-managed models use `<GenericDataLocation>/kira-canvas/models/`, with upscalers under `models/upscale/`. On many Linux systems the data root is similar to `~/.local/share/kira-canvas/`; on macOS it is in the user’s Application Support location. Qt resolves these locations rather than the application hard-coding either platform’s path. The current interface does not provide an in-app model installer.
 
 Curated runtime resources are separate from user-installed models. They live under `<GenericDataLocation>/kira-canvas/resources/`, with `generation/`, `upscale/`, and `metadata/` subdirectories. Each resource is downloaded to a neighboring `.part` file, verified before an atomic install, and recorded in internal verification metadata. On startup, Kira Canvas prepares any required curated resources before opening the main window; already verified resources open directly without the preparation screen.
 
@@ -35,14 +35,15 @@ Curated runtime resources are separate from user-installed models. They live und
 
 Kira Canvas resolves the system-installed `sd-cli` through Qt standard paths. It does not bundle or manage stable-diffusion.cpp, and runs one-shot `sd-cli` processes rather than a persistent server.
 
+For a macOS developer build, the process that launches Kira Canvas must have `sd-cli` on its `PATH`. This project does not bundle the backend or provide an in-app backend selector.
+
 ## Technology
 
 - C++20
 - Qt 6 Widgets
-- Extra CMake Modules
 - CMake and Ninja
 
-`QMainWindow` is used for this first empty slice. It follows the active Qt/Plasma theme without adding KDE Frameworks runtime dependencies before they are needed.
+`QMainWindow` uses Qt’s active platform integration without application-set stylesheets or a forced style. The macOS build adds a native application bundle and unified title/toolbar presentation; it is a developer build only and is not signed, notarized, or deployed by this project.
 
 ## Prerequisites
 
@@ -50,8 +51,8 @@ Kira Canvas resolves the system-installed `sd-cli` through Qt standard paths. It
 - Ninja
 - C++20-capable compiler
 - Qt 6 Widgets development files
-- Extra CMake Modules development files
-- KDE Frameworks 6 KIO development files
+
+On Linux, install the distribution’s Qt desktop integration for the desktop you use (such as Plasma Integration for KDE Plasma or the Qt GTK platform theme for GNOME) so Qt can follow its native palette, icons, fonts, and dialogs.
 
 ## Build
 
@@ -62,8 +63,16 @@ cmake --build build
 
 ## Run
 
+On Linux:
+
 ```sh
 ./build/src/kira-canvas
+```
+
+On macOS, CMake creates a developer `.app` bundle. Launch its executable from an environment where `sd-cli` is on `PATH`:
+
+```sh
+./build/src/kira-canvas.app/Contents/MacOS/kira-canvas
 ```
 
 ## Test

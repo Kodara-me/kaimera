@@ -1,6 +1,7 @@
 #include "GeneratePanel.h"
 
 #include "ReferenceSlotWidget.h"
+#include "SystemIcon.h"
 
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -113,8 +114,7 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     m_seedSpinBox->setValue(-1);
     seedLayout->addWidget(m_seedSpinBox, 1);
     auto *randomizeSeedButton = new QToolButton(content);
-    randomizeSeedButton->setIcon(
-        QIcon::fromTheme(QStringLiteral("view-refresh"), style()->standardIcon(QStyle::SP_BrowserReload)));
+    randomizeSeedButton->setIcon(systemIcon(QStringLiteral("view-refresh"), QStyle::SP_BrowserReload, this));
     randomizeSeedButton->setToolTip(tr("Randomize seed"));
     connect(randomizeSeedButton, &QToolButton::clicked, this, [this] {
         m_seedSpinBox->setValue(QRandomGenerator::global()->bounded(1, 1000000000));

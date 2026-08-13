@@ -3,8 +3,8 @@
 ## Project Identity
 
 - **Project:** Kira Canvas
-- Native Linux/KDE desktop application.
-- C++ / Qt 6 / KDE Frameworks 6 application.
+- Native Linux and macOS desktop application.
+- C++ / Qt 6 Widgets application.
 - AI-assisted image generation and editing application.
 
 ## Development Philosophy
@@ -15,8 +15,8 @@
 - Do not create infrastructure before it is needed.
 - Prefer straightforward, readable C++.
 - Keep dependencies minimal.
-- Preserve native KDE behavior and appearance.
-- Prefer Qt/KDE facilities over custom replacements.
+- Preserve native desktop behavior and appearance.
+- Prefer Qt and platform facilities over custom replacements.
 - Do not introduce QML or another UI framework without explicit approval.
 - Do not introduce Python into the application runtime.
 - Do not implement future roadmap items unless explicitly requested.
@@ -26,7 +26,7 @@
 
 ## UI Principles
 
-- The application should look and behave like a native KDE Plasma application.
+- The application should look and behave like a native desktop application: KDE Plasma and GNOME on Linux, and macOS on Apple platforms.
 - Prefer system theme, fonts, icons, dialogs, shortcuts, and conventions.
 - Avoid custom styling unless there is a clear requirement.
 - Kira Canvas is AI-image-workflow-first, not a Photoshop clone.
@@ -35,7 +35,7 @@
 - The center image workspace is the visual focus of the main window.
 - Keep the main toolbar intentionally minimal.
 - Do not introduce drawing or editing tools without an explicit requirement.
-- Follow the native KDE/Plasma theme; avoid application-wide custom styling.
+- Follow the active desktop theme; avoid application-wide custom styling, forced Qt styles, and stylesheets.
 - The Image Library is the primary browser for generated, imported, modified, and upscaled images.
 - Keep the Library UI compact and sidebar-oriented, using native selection and thumbnail presentation.
 - Do not couple the visual library directly to filesystem persistence; its data source must remain replaceable.
@@ -52,14 +52,15 @@
 - Assigning or clearing operation references must not alter the Library or current image. Coordinate cross-widget workspace interactions through explicit Qt signals and slots, not global state.
 - The active preview image is the source for Upscale. Mock in-memory data must not dictate the eventual persistence implementation.
 - The Image Library is a logical view, not a physical directory. External images remain at their original locations and must never be silently copied, moved, renamed, or modified.
-- A user-confirmed Library Move to Trash action uses KDE KIO; it moves the selected source file to the desktop Trash and removes its Library entry only after the operation succeeds.
+- A user-confirmed Library Move to Trash action uses `QFile::moveToTrash()`; it uses the FreeDesktop Trash on Linux and the macOS Trash API on Mac, and removes its Library entry only after the operation succeeds.
 - Kira Canvas-owned outputs will use `<Pictures>/Kira Canvas/`, resolved through `QStandardPaths::PicturesLocation`, with Generated and Upscaled subdirectories.
 - Reference roles are application relationships, not filesystem folders. The Library persists asset paths through QSettings, operation references point to Library assets, and duplicate source paths must not create duplicate entries. External image files remain in place and unavailable or unreadable paths are skipped when restoring the Library.
-- Prefer native system/KDE file dialogs. Do not automatically scan external folders. On startup, scan only the Kira Canvas-owned Generated and Upscaled output directories to restore readable output images to the Library.
-- Kira Canvas follows XDG/Linux storage conventions: application data is rooted at `QStandardPaths::GenericDataLocation/kira-canvas` and managed models live in `models/` or `models/upscale/`.
+- Prefer native system file dialogs. Do not automatically scan external folders. On startup, scan only the Kira Canvas-owned Generated and Upscaled output directories to restore readable output images to the Library.
+- Kira Canvas follows Qt platform storage conventions: application data is rooted at `QStandardPaths::GenericDataLocation/kira-canvas` and managed models live in `models/` or `models/upscale/`. This resolves to XDG locations on Linux and Application Support on macOS.
 - Managed models live in Kira Canvas storage. Any future installation workflow must copy rather than move or delete the user’s source file, must not silently overwrite an existing destination, and must not infer a model category from its filename.
 - Model discovery scans only Kira Canvas managed storage and identifies files without loading or validating them. Image output storage remains separate under the user’s standard Pictures location.
 - Keep the main toolbar minimal: Import Photo and active-preview Upscale are the only top-level actions. Do not add automatic downloads or filesystem watchers without a concrete requirement.
+- The File and Image menus reuse the existing Import, Close Preview, and Upscale actions. On macOS, use the native menu bar, standard Command shortcuts, and unified title/toolbar presentation; on Linux, let Qt’s desktop integration choose appearance and icons.
 - Kira Canvas uses only the system-installed `sd-cli`, resolved with `QStandardPaths::findExecutable("sd-cli")`; it never owns, installs, bundles, or links stable-diffusion.cpp.
 - AI workflows will use one-shot, workflow-specific `sd-cli` QProcess executions. Do not introduce sd-server, HTTP communication, or a persistent inference daemon.
 - Text-to-image status progress derives asynchronously from `sd-cli` lifecycle output and sampling counters. Keep parser knowledge in the runtime layer, stream raw output to the developer console unchanged, and render only structured, user-friendly progress in the status bar.
@@ -80,7 +81,7 @@ These are future areas only. Do not create their directories, types, or infrastr
 
 ## Build Integration
 
-The foundation uses `QMainWindow` from Qt Widgets deliberately. It receives the native Plasma Qt theme while avoiding unnecessary KDE Frameworks runtime APIs for the empty initial window. Extra CMake Modules is used by the build and KDE Frameworks should be introduced only when a concrete feature needs it.
+The foundation uses `QMainWindow` from Qt Widgets deliberately. It receives the active Qt platform theme without KDE Frameworks runtime APIs. The macOS target is a host-architecture developer `.app` bundle only; signing, notarization, universal binaries, and deployment tooling are outside the current scope.
 
 ## Workflow
 
