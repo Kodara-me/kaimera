@@ -4,27 +4,26 @@ Kira Canvas is a native Linux/KDE desktop application intended for AI-assisted i
 
 ## Status
 
-Images can be imported into the persistent Library with the native Open dialog. The Library stores image paths through Qt settings and restores readable files from their original locations on the next launch. Search matches filenames, and category filters distinguish Generated, Imported, Modified, and Upscaled images. The Library offers both icon and list views; selected source images can be moved to the desktop Trash from its context menu or with Delete after confirmation. Library selection drives Generate and Modify inputs. An active preview tab enables the toolbar’s Upscale action, which offers 2× or 4× scaling and imports the result into the Library. Generation and upscaling run as one-shot local `sd-cli` processes.
+Images can be imported into the persistent Library with the native Open dialog. The Library stores image paths through Qt settings and restores readable files from their original locations on the next launch. Search matches filenames, and category filters distinguish Generated, Imported, and Upscaled images. The Library offers both icon and list views; selected source images can be moved to the desktop Trash from its context menu or with Delete after confirmation. Library selection drives the optional Generate base image. An active preview tab enables the toolbar’s Upscale action, which offers 2× or 4× scaling and imports the result into the Library. Generation and upscaling run as one-shot local `sd-cli` processes.
 
 Double-click a Library image to open it in a closable preview tab. The workspace remains empty until an image tab is opened.
 
-Generation explicitly passes resolution, sampler, scheduler, steps, CFG scale, and seed to `sd-cli`. The developer console records the reconstructed command and streams `sd-cli` output while generation runs.
+Generation explicitly passes resolution, sampler, scheduler, steps, CFG scale, and seed to `sd-cli`. The developer console records the reconstructed command and streams `sd-cli` output while it runs.
 
 The status bar derives generation progress from the streamed `sd-cli` lifecycle and sampling output. It shows a temporary progress bar while generating and hides it again after completion or failure.
 
 ## Images opened by the user
 
-External images remain in their original filesystem locations. Kira Canvas does not copy, move, rename, or modify them when opening them. A user-confirmed Move to Trash action is the exception: it moves the selected source file to the desktop Trash and removes it from the Library.
+External images remain in their original filesystem locations. Kira Canvas does not copy, move, rename, or alter them when opening them. A user-confirmed Move to Trash action is the exception: it moves the selected source file to the desktop Trash and removes it from the Library.
 
 ## Kira Canvas managed outputs
 
 Future Kira Canvas outputs will use `<Pictures>/Kira Canvas/`, where `<Pictures>` is resolved with Qt's `QStandardPaths::PicturesLocation` rather than assuming `~/Pictures`.
 
 - `Generated/`
-- `Modified/`
 - `Upscaled/`
 
-Generated and upscaled images are written to their respective directories. On startup, Kira Canvas scans these Kira Canvas-owned output folders and restores readable images to the Library. Modified-image output is not implemented yet.
+Generated, modified, and upscaled images are written to their respective directories. On startup, Kira Canvas scans these Kira Canvas-owned output folders and restores readable images to the Library.
 
 ## Storage
 
@@ -77,4 +76,4 @@ The automated tests use a local HTTP fixture to cover curated-resource download,
 
 ## Future Direction
 
-Future slices may expand the image canvas, Modify workflow, model management, settings, and stable-diffusion.cpp integration through `QProcess`.
+Future slices may expand the image canvas, model management, settings, and stable-diffusion.cpp integration through `QProcess`.

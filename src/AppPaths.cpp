@@ -18,12 +18,6 @@ QString AppPaths::generatedPath()
     return rootPath.isEmpty() ? QString() : QDir(rootPath).filePath(QStringLiteral("Generated"));
 }
 
-QString AppPaths::modifiedPath()
-{
-    const QString rootPath = managedRootPath();
-    return rootPath.isEmpty() ? QString() : QDir(rootPath).filePath(QStringLiteral("Modified"));
-}
-
 QString AppPaths::upscaledPath()
 {
     const QString rootPath = managedRootPath();
@@ -58,7 +52,7 @@ bool AppPaths::ensureManagedDirectories(QString *errorMessage)
         return false;
     }
 
-    const std::array<QString, 4> paths = {rootPath, generatedPath(), modifiedPath(), upscaledPath()};
+    const std::array<QString, 3> paths = {rootPath, generatedPath(), upscaledPath()};
     for (const QString &path : paths) {
         if (!QDir().mkpath(path)) {
             if (errorMessage != nullptr) {

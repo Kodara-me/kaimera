@@ -72,7 +72,6 @@ int ImageViewer::zoomPercent() const
 void ImageViewer::resizeEvent(QResizeEvent *event)
 {
     QGraphicsView::resizeEvent(event);
-
     if (m_imageItem->pixmap().isNull()) {
         centerOn(m_emptyMessage);
     }

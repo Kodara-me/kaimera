@@ -23,8 +23,6 @@ add_executable(curated-resource-manager-test
     ../src/ModelInfo.h
     ../src/MainWindow.cpp
     ../src/MainWindow.h
-    ../src/ModifyPanel.cpp
-    ../src/ModifyPanel.h
     ../src/ReferenceSlotWidget.cpp
     ../src/ReferenceSlotWidget.h
     ../src/SdCliRunner.cpp

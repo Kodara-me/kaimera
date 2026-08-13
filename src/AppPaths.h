@@ -7,7 +7,6 @@ class AppPaths final
 public:
     static QString managedRootPath();
     static QString generatedPath();
-    static QString modifiedPath();
     static QString upscaledPath();
     static QString applicationDataRoot();
     static QString modelsPath();

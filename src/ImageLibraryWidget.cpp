@@ -51,8 +51,6 @@ QString categoryName(ImageAssetCategory category)
         return QObject::tr("Generated");
     case ImageAssetCategory::Imported:
         return QObject::tr("Imported");
-    case ImageAssetCategory::Modified:
-        return QObject::tr("Modified");
     case ImageAssetCategory::Upscaled:
         return QObject::tr("Upscaled");
     }
@@ -221,7 +219,6 @@ ImageLibraryWidget::ImageLibraryWidget(const std::deque<ImageAsset> &assets, QWi
     m_filterSelector->addItem(tr("All Images"));
     for (const ImageAssetCategory category : {ImageAssetCategory::Generated,
                                               ImageAssetCategory::Imported,
-                                              ImageAssetCategory::Modified,
                                               ImageAssetCategory::Upscaled}) {
         m_filterSelector->addItem(categoryName(category), static_cast<int>(category));
     }

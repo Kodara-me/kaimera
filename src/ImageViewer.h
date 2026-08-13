@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QGraphicsView>
-#include <QImage>
 
 class QGraphicsPixmapItem;
 class QGraphicsScene;

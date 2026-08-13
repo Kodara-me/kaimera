@@ -5,7 +5,6 @@
 #include "GeneratePanel.h"
 #include "ImageLibraryWidget.h"
 #include "ImageViewer.h"
-#include "ModifyPanel.h"
 #include "SdCliRunner.h"
 #include "UpscaleDialog.h"
 
@@ -73,14 +72,12 @@ ImageAssetCategory categoryForPath(const QString &filePath)
     if (isPathInDirectory(filePath, AppPaths::generatedPath())) {
         return ImageAssetCategory::Generated;
     }
-    if (isPathInDirectory(filePath, AppPaths::modifiedPath())) {
-        return ImageAssetCategory::Modified;
-    }
     if (isPathInDirectory(filePath, AppPaths::upscaledPath())) {
         return ImageAssetCategory::Upscaled;
     }
     return ImageAssetCategory::Imported;
 }
+
 }
 
 MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent)
@@ -117,17 +114,13 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
     m_previewTabs->setTabsClosable(true);
     workspaceLayout->addWidget(m_previewTabs, 1);
 
-    auto *operationsTabs = new QTabWidget(this);
-    m_generatePanel = new GeneratePanel(statusBar(), operationsTabs);
-    operationsTabs->addTab(m_generatePanel, tr("Generate"));
-    m_modifyPanel = new ModifyPanel(statusBar(), operationsTabs);
-    operationsTabs->addTab(m_modifyPanel, tr("Modify"));
-    operationsTabs->setMinimumWidth(280);
+    m_generatePanel = new GeneratePanel(statusBar(), this);
+    m_generatePanel->setMinimumWidth(280);
 
     m_workspaceSplitter = new QSplitter(Qt::Horizontal, this);
     m_workspaceSplitter->addWidget(m_library);
     m_workspaceSplitter->addWidget(workspace);
-    m_workspaceSplitter->addWidget(operationsTabs);
+    m_workspaceSplitter->addWidget(m_generatePanel);
     m_workspaceSplitter->setStretchFactor(0, 0);
     m_workspaceSplitter->setStretchFactor(1, 1);
     m_workspaceSplitter->setStretchFactor(2, 0);
@@ -172,15 +165,6 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
                                              ? tr("Assigned %1 as Generate %2").arg(asset->name, title)
                                              : tr("Cleared Generate %1").arg(title));
             });
-    connect(m_modifyPanel,
-            &ModifyPanel::referenceChanged,
-            this,
-            [this](const QString &title, const ImageAsset *asset) {
-                statusBar()->showMessage(asset != nullptr
-                                             ? tr("Assigned %1 as Modify %2").arg(asset->name, title)
-                                             : tr("Cleared Modify %1").arg(title));
-            });
-
     clearCurrentImage();
     restoreLibrary();
     QString imageDirectoryError;
@@ -223,8 +207,6 @@ void MainWindow::setCurrentImage(const ImageAsset *asset, bool showStatus)
     }
 
     m_generatePanel->setSelectedAsset(asset);
-    m_modifyPanel->setSourceImage(*asset);
-    m_modifyPanel->setSelectedAsset(asset);
     if (showStatus) {
         statusBar()->showMessage(tr("Selected %1").arg(asset->name));
     }
@@ -233,8 +215,6 @@ void MainWindow::setCurrentImage(const ImageAsset *asset, bool showStatus)
 void MainWindow::clearCurrentImage()
 {
     m_generatePanel->setSelectedAsset(nullptr);
-    m_modifyPanel->clearSourceImage();
-    m_modifyPanel->setSelectedAsset(nullptr);
 }
 
 void MainWindow::openImagePreview(const ImageAsset *asset)
@@ -346,8 +326,7 @@ void MainWindow::restoreLibrary()
 
 void MainWindow::restoreManagedOutputImages()
 {
-    const std::array<QString, 3> outputDirectories = {
-        AppPaths::generatedPath(), AppPaths::modifiedPath(), AppPaths::upscaledPath()};
+    const std::array<QString, 2> outputDirectories = {AppPaths::generatedPath(), AppPaths::upscaledPath()};
     for (const QString &directoryPath : outputDirectories) {
         const QDir directory(directoryPath);
         const QFileInfoList files = directory.entryInfoList(QDir::Files | QDir::Readable,
@@ -378,7 +357,6 @@ void MainWindow::moveAssetToTrash(const QString &filePath)
     if (asset == m_assets.cend() || m_assetsBeingTrashed.contains(filePath)) {
         return;
     }
-
     const QFileInfo fileInfo(filePath);
     if (!fileInfo.exists()) {
         removeAssetFromLibrary(filePath);
@@ -428,7 +406,6 @@ void MainWindow::removeAssetFromLibrary(const QString &filePath)
 
     const ImageAsset *removedAsset = &*asset;
     m_generatePanel->removeAsset(removedAsset);
-    m_modifyPanel->removeAsset(removedAsset);
 
     for (int index = m_previewTabs->count() - 1; index >= 0; --index) {
         if (m_previewTabs->tabBar()->tabData(index).toString() != filePath) {

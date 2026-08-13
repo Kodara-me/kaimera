@@ -19,8 +19,6 @@ add_executable(kira-canvas
     ModelDiscovery.cpp
     ModelDiscovery.h
     ModelInfo.h
-    ModifyPanel.cpp
-    ModifyPanel.h
     ReferenceSlotWidget.cpp
     ReferenceSlotWidget.h
     SdCliRunner.cpp

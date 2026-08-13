@@ -7,7 +7,6 @@ enum class ImageAssetCategory
 {
     Generated,
     Imported,
-    Modified,
     Upscaled
 };
 

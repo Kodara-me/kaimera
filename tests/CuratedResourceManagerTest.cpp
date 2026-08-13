@@ -833,7 +833,8 @@ void CuratedResourceManagerTest::filtersLibraryAssets()
     QCOMPARE(visibleLibraryItemCount(*view), 1);
     QCOMPARE(view->item(0)->isHidden(), false);
 
-    categorySelector->setCurrentIndex(categorySelector->findData(static_cast<int>(ImageAssetCategory::Modified)));
+    searchField->setText(QStringLiteral("generated"));
+    categorySelector->setCurrentIndex(categorySelector->findData(static_cast<int>(ImageAssetCategory::Upscaled)));
     QCOMPARE(visibleLibraryItemCount(*view), 0);
     auto *emptyState = library.findChild<QLabel *>(QStringLiteral("libraryEmptyState"));
     QVERIFY(emptyState != nullptr);

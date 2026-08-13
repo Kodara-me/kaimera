@@ -14,9 +14,9 @@ class QCloseEvent;
 class QAction;
 class QProgressBar;
 class QSplitter;
-class ModifyPanel;
 class SdCliRunner;
 class QTabWidget;
+class ImageViewer;
 struct GenerationRequest;
 struct GenerationProgress;
 struct SdCliGenerationResult;
@@ -60,7 +60,6 @@ private:
     GeneratePanel *m_generatePanel = nullptr;
     ImageLibraryWidget *m_library = nullptr;
     QProgressBar *m_generationProgressBar = nullptr;
-    ModifyPanel *m_modifyPanel = nullptr;
     SdCliRunner *m_sdCliRunner = nullptr;
     CuratedResourceManager &m_curatedResources;
     QSplitter *m_workspaceSplitter = nullptr;
