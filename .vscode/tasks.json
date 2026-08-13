@@ -13,6 +13,15 @@
                 "isDefault": true
             },
             "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Build Kira Service",
+            "type": "shell",
+            "command": "cmake --build build --target kira-service",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": ["$gcc"]
         }
     ]
 }

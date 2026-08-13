@@ -13,6 +13,7 @@ add_executable(curated-resource-manager-test
     ../src/CuratedResourceManager.h
     ../src/GenerationRequest.h
     ../src/GenerationProgress.h
+    ../src/ImageOperationRequest.h
     ../src/GeneratePanel.cpp
     ../src/GeneratePanel.h
     ../src/ImageAsset.h
@@ -29,6 +30,12 @@ add_executable(curated-resource-manager-test
     ../src/SdCliRunner.h
     ../src/SdCliProgressParser.cpp
     ../src/SdCliProgressParser.h
+    ../src/ServiceClient.cpp
+    ../src/ServiceClient.h
+    ../src/ServicePreferencesDialog.cpp
+    ../src/ServicePreferencesDialog.h
+    ../src/ServiceProtocol.cpp
+    ../src/ServiceProtocol.h
     ../src/StartupPreparationWidget.cpp
     ../src/StartupPreparationWidget.h
     ../src/UpscaleDialog.cpp
@@ -36,7 +43,7 @@ add_executable(curated-resource-manager-test
 )
 
 target_include_directories(curated-resource-manager-test PRIVATE ../src)
-target_link_libraries(curated-resource-manager-test PRIVATE Qt6::Network Qt6::Test Qt6::Widgets)
+target_link_libraries(curated-resource-manager-test PRIVATE Qt6::Network Qt6::Test Qt6::WebSockets Qt6::Widgets)
 
 add_test(NAME curated-resource-manager-test COMMAND curated-resource-manager-test)
 set_tests_properties(curated-resource-manager-test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

@@ -2,6 +2,7 @@
 
 #include "GenerationRequest.h"
 #include "GenerationProgress.h"
+#include "ServiceJobResult.h"
 #include "SdCliProgressParser.h"
 
 #include <QElapsedTimer>
@@ -10,27 +11,6 @@
 #include <QStringList>
 
 #include <optional>
-
-struct SdCliGenerationResult
-{
-    bool succeeded = false;
-    int exitCode = -1;
-    QStringList arguments;
-    QString standardOutput;
-    QString standardError;
-    QString outputPath;
-};
-
-Q_DECLARE_METATYPE(SdCliGenerationResult)
-
-struct SdCliUpscaleResult
-{
-    bool succeeded = false;
-    int exitCode = -1;
-    QString outputPath;
-};
-
-Q_DECLARE_METATYPE(SdCliUpscaleResult)
 
 class QProcess;
 
@@ -45,6 +25,7 @@ public:
     void runHelp();
     bool runGeneration(const GenerationRequest &request);
     bool runUpscale(const QStringList &arguments, const QString &outputPath);
+    void cancel();
     std::optional<SdCliGenerationResult> lastGenerationResult() const;
 
 signals:

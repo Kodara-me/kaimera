@@ -2,11 +2,8 @@ add_executable(kira-canvas
     main.cpp
     AppPaths.cpp
     AppPaths.h
-    CuratedResource.h
-    CuratedResourceManager.cpp
-    CuratedResourceManager.h
-    GenerationRequest.h
     GenerationProgress.h
+    ImageOperationRequest.h
     GeneratePanel.cpp
     GeneratePanel.h
     ImageAsset.h
@@ -16,23 +13,47 @@ add_executable(kira-canvas
     ImageViewer.h
     MainWindow.cpp
     MainWindow.h
-    ModelDiscovery.cpp
-    ModelDiscovery.h
-    ModelInfo.h
     ReferenceSlotWidget.cpp
     ReferenceSlotWidget.h
-    SdCliRunner.cpp
-    SdCliRunner.h
-    SdCliProgressParser.cpp
-    SdCliProgressParser.h
-    StartupPreparationWidget.cpp
-    StartupPreparationWidget.h
+    ServiceClient.cpp
+    ServiceClient.h
+    ServicePreferencesDialog.cpp
+    ServicePreferencesDialog.h
+    ServiceProtocol.cpp
+    ServiceProtocol.h
+    ServiceJobResult.h
     SystemIcon.h
     UpscaleDialog.cpp
     UpscaleDialog.h
 )
 
-target_link_libraries(kira-canvas PRIVATE Qt6::Network Qt6::Widgets)
+target_link_libraries(kira-canvas PRIVATE Qt6::Network Qt6::WebSockets Qt6::Widgets)
+
+add_executable(kira-service
+    ../src/kira-service-main.cpp
+    AppPaths.cpp
+    AppPaths.h
+    CuratedResource.h
+    CuratedResourceManager.cpp
+    CuratedResourceManager.h
+    GenerationRequest.h
+    GenerationProgress.h
+    KiraService.cpp
+    KiraService.h
+    SdCliProgressParser.cpp
+    SdCliProgressParser.h
+    SdCliRunner.cpp
+    SdCliRunner.h
+    ServiceJobResult.h
+    ServiceProtocol.cpp
+    ServiceProtocol.h
+)
+target_link_libraries(kira-service PRIVATE Qt6::Network Qt6::WebSockets)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(kira-service PRIVATE -Wall -Wextra -Wpedantic)
+elseif(MSVC)
+    target_compile_options(kira-service PRIVATE /W4)
+endif()
 
 if(APPLE)
     set_target_properties(kira-canvas PROPERTIES

@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QProcess>
+#include <QTimer>
 
 #include <algorithm>
 
@@ -127,6 +128,19 @@ bool SdCliRunner::runGeneration(const GenerationRequest &request)
 bool SdCliRunner::runUpscale(const QStringList &arguments, const QString &outputPath)
 {
     return start(RequestType::Upscale, arguments, outputPath);
+}
+
+void SdCliRunner::cancel()
+{
+    if (m_requestType == RequestType::None || m_process->state() == QProcess::NotRunning) {
+        return;
+    }
+    m_process->terminate();
+    QTimer::singleShot(3000, m_process, [process = m_process] {
+        if (process->state() != QProcess::NotRunning) {
+            process->kill();
+        }
+    });
 }
 
 std::optional<SdCliGenerationResult> SdCliRunner::lastGenerationResult() const

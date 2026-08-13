@@ -12,6 +12,15 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "Build Kira Canvas"
+        },
+        {
+            "name": "Debug Kira Service",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/src/kira-service",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build Kira Service"
         }
     ]
 }

@@ -173,7 +173,7 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     m_generateButton->setDefault(true);
     m_generateButton->setEnabled(false);
     connect(m_generateButton, &QPushButton::clicked, this, [this] {
-        GenerationRequest request;
+        ImageGenerationRequest request;
         request.prompt = m_promptEdit->toPlainText();
         request.negativePrompt = m_negativePromptEdit->toPlainText();
         request.sampler = m_samplerSelector->currentData().toString();
@@ -201,9 +201,15 @@ void GeneratePanel::setGenerationRunning(bool running)
     updateGenerateEnabled();
 }
 
+void GeneratePanel::setGenerationAvailable(bool available)
+{
+    m_generationAvailable = available;
+    updateGenerateEnabled();
+}
+
 void GeneratePanel::updateGenerateEnabled()
 {
-    m_generateButton->setEnabled(!m_generationRunning && !m_promptEdit->toPlainText().trimmed().isEmpty());
+    m_generateButton->setEnabled(m_generationAvailable && !m_generationRunning && !m_promptEdit->toPlainText().trimmed().isEmpty());
 }
 
 void GeneratePanel::setSelectedAsset(const ImageAsset *asset)

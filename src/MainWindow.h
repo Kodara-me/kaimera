@@ -7,15 +7,14 @@
 
 class ImageLibraryWidget;
 class GeneratePanel;
-class CuratedResourceManager;
 class QCloseEvent;
 class QAction;
 class QProgressBar;
 class QSplitter;
-class SdCliRunner;
+class ServiceClient;
 class QTabWidget;
 class ImageViewer;
-struct GenerationRequest;
+struct ImageGenerationRequest;
 struct GenerationProgress;
 struct SdCliGenerationResult;
 struct SdCliUpscaleResult;
@@ -23,7 +22,7 @@ struct SdCliUpscaleResult;
 class MainWindow final : public QMainWindow
 {
 public:
-    explicit MainWindow(CuratedResourceManager &curatedResources, QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -41,7 +40,7 @@ private:
     void openImages();
     void closePreview(int index);
     void closeCurrentPreview();
-    void startGeneration(GenerationRequest request);
+    void startGeneration(const ImageGenerationRequest &request);
     void updateGenerationProgress(const GenerationProgress &progress);
     void hideGenerationProgress();
     void handleGenerationFinished(const SdCliGenerationResult &result);
@@ -49,6 +48,8 @@ private:
     void updateUpscaleAction();
     void showUpscaleDialog();
     void startUpscale(const ImageAsset &source, int scale);
+    void showServicePreferences();
+    void updateServiceCapabilities(bool generationAvailable, bool upscaleAvailable);
     void handleUpscaleFinished(const SdCliUpscaleResult &result);
     void applyDefaultLayout();
     void restoreWindowState();
@@ -62,9 +63,10 @@ private:
     GeneratePanel *m_generatePanel = nullptr;
     ImageLibraryWidget *m_library = nullptr;
     QProgressBar *m_generationProgressBar = nullptr;
-    SdCliRunner *m_sdCliRunner = nullptr;
-    CuratedResourceManager &m_curatedResources;
+    ServiceClient *m_serviceClient = nullptr;
     QSplitter *m_workspaceSplitter = nullptr;
     bool m_generationRunning = false;
     bool m_upscaleRunning = false;
+    bool m_generationAvailable = false;
+    bool m_upscaleAvailable = false;
 };

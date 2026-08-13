@@ -6,6 +6,7 @@
 #include "ReferenceSlotWidget.h"
 #include "SdCliRunner.h"
 #include "SdCliProgressParser.h"
+#include "ServiceProtocol.h"
 #include "StartupPreparationWidget.h"
 #include "UpscaleDialog.h"
 
@@ -196,6 +197,7 @@ private slots:
     void wiresBaseImageAndStrength();
     void capturesGenerationProcessResult();
     void parsesGenerationProgressFromSdCliOutput();
+    void serializesServiceProgress();
     void displaysPreviewAtNativeSize();
     void capturesUpscaleProcessResult();
     void displaysUpscaleDialogResolution();
@@ -450,8 +452,8 @@ void CuratedResourceManagerTest::createsBuiltInGenerationRequestWithoutModelSele
     QStatusBar statusBar;
     GeneratePanel panel(&statusBar);
 
-    GenerationRequest request;
-    connect(&panel, &GeneratePanel::generationRequested, this, [&request](const GenerationRequest &emittedRequest) {
+    ImageGenerationRequest request;
+    connect(&panel, &GeneratePanel::generationRequested, this, [&request](const ImageGenerationRequest &emittedRequest) {
         request = emittedRequest;
     });
     QPushButton *generateButton = panel.findChild<QPushButton *>();
@@ -498,8 +500,8 @@ void CuratedResourceManagerTest::wiresBaseImageAndStrength()
                               QStringLiteral("base.png"),
                               QStringLiteral("/tmp/base.png"),
                               QImage(512, 512, QImage::Format_ARGB32)};
-    GenerationRequest request;
-    connect(&panel, &GeneratePanel::generationRequested, this, [&request](const GenerationRequest &emittedRequest) {
+    ImageGenerationRequest request;
+    connect(&panel, &GeneratePanel::generationRequested, this, [&request](const ImageGenerationRequest &emittedRequest) {
         request = emittedRequest;
     });
 
@@ -672,6 +674,24 @@ void CuratedResourceManagerTest::parsesGenerationProgressFromSdCliOutput()
     QCOMPARE(failed->stage, GenerationProgressStage::Failed);
 }
 
+void CuratedResourceManagerTest::serializesServiceProgress()
+{
+    const GenerationProgress original = {GenerationProgressStage::Sampling,
+                                         14,
+                                         28,
+                                         53,
+                                         QStringLiteral("Sampling 14 / 28")};
+    const QJsonObject encoded = ServiceProtocol::progressToJson(original);
+    QCOMPARE(encoded.value(QStringLiteral("stage")).toString(), QStringLiteral("sampling"));
+    QCOMPARE(encoded.value(QStringLiteral("currentStep")).toInt(), 14);
+    const GenerationProgress decoded = ServiceProtocol::progressFromJson(encoded);
+    QCOMPARE(decoded.stage, GenerationProgressStage::Sampling);
+    QCOMPARE(decoded.currentStep, original.currentStep);
+    QCOMPARE(decoded.totalSteps, original.totalSteps);
+    QCOMPARE(decoded.percentage, original.percentage);
+    QCOMPARE(decoded.statusText, original.statusText);
+}
+
 void CuratedResourceManagerTest::displaysPreviewAtNativeSize()
 {
     ImageViewer viewer;
@@ -761,8 +781,7 @@ void CuratedResourceManagerTest::enablesUpscaleForActivePreview()
     settings.sync();
     const QString canonicalImagePath = QFileInfo(imagePath).canonicalFilePath();
 
-    CuratedResourceManager manager({}, directory.filePath(QStringLiteral("resources")));
-    MainWindow window(manager);
+    MainWindow window;
     auto *upscaleAction = window.findChild<QAction *>(QStringLiteral("upscaleAction"));
     auto *libraryView = window.findChild<QListWidget *>(QStringLiteral("libraryAssetView"));
     QVERIFY(upscaleAction != nullptr);
@@ -779,7 +798,7 @@ void CuratedResourceManagerTest::enablesUpscaleForActivePreview()
     QVERIFY(sourceItem != nullptr);
 
     libraryView->itemDoubleClicked(sourceItem);
-    QTRY_VERIFY(upscaleAction->isEnabled());
+    QTRY_VERIFY(!upscaleAction->isEnabled());
 
     QTabWidget *previewTabs = nullptr;
     for (QTabWidget *tabs : window.findChildren<QTabWidget *>()) {
@@ -798,14 +817,14 @@ void CuratedResourceManagerTest::providesSharedMainWindowActions()
     QTemporaryDir directory;
     QVERIFY(directory.isValid());
 
-    CuratedResourceManager manager({}, directory.filePath(QStringLiteral("resources")));
-    MainWindow window(manager);
+    MainWindow window;
 
     QMenuBar *menuBar = window.menuBar();
     QVERIFY(menuBar != nullptr);
-    QCOMPARE(menuBar->actions().size(), 2);
+    QCOMPARE(menuBar->actions().size(), 3);
     QCOMPARE(menuBar->actions().at(0)->text(), QStringLiteral("&File"));
     QCOMPARE(menuBar->actions().at(1)->text(), QStringLiteral("&Image"));
+    QCOMPARE(menuBar->actions().at(2)->text(), QStringLiteral("&Settings"));
 
     const QList<QAction *> fileActions = menuBar->actions().at(0)->menu()->actions();
     QCOMPARE(fileActions.size(), 2);

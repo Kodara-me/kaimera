@@ -1,11 +1,11 @@
 #include "MainWindow.h"
 
 #include "AppPaths.h"
-#include "CuratedResourceManager.h"
 #include "GeneratePanel.h"
 #include "ImageLibraryWidget.h"
 #include "ImageViewer.h"
-#include "SdCliRunner.h"
+#include "ServiceClient.h"
+#include "ServicePreferencesDialog.h"
 #include "SystemIcon.h"
 #include "UpscaleDialog.h"
 
@@ -26,7 +26,6 @@
 #include <QSettings>
 #include <QSplitter>
 #include <QStatusBar>
-#include <QStandardPaths>
 #include <QStyle>
 #include <QTabWidget>
 #include <QTabBar>
@@ -76,9 +75,8 @@ ImageAssetCategory categoryForPath(const QString &filePath)
 
 }
 
-MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , m_curatedResources(curatedResources)
 {
     setWindowTitle(tr("Kira Canvas"));
     resize(1600, 1000);
@@ -112,6 +110,8 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
     fileMenu->addAction(m_closePreviewAction);
     QMenu *imageMenu = menuBar()->addMenu(tr("&Image"));
     imageMenu->addAction(m_upscaleAction);
+    QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
+    auto *servicePreferencesAction = settingsMenu->addAction(tr("Service Preferences…"));
 
     m_generationProgressBar = new QProgressBar(statusBar());
     m_generationProgressBar->setRange(0, 100);
@@ -146,6 +146,7 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
     connect(m_importAction, &QAction::triggered, this, &MainWindow::openImages);
     connect(m_closePreviewAction, &QAction::triggered, this, &MainWindow::closeCurrentPreview);
     connect(m_upscaleAction, &QAction::triggered, this, &MainWindow::showUpscaleDialog);
+    connect(servicePreferencesAction, &QAction::triggered, this, &MainWindow::showServicePreferences);
     connect(m_generatePanel, &GeneratePanel::generationRequested, this, &MainWindow::startGeneration);
     connect(m_library, &ImageLibraryWidget::imageSelected, this, [this](const ImageAsset *asset) {
         setCurrentImage(asset, true);
@@ -186,18 +187,19 @@ MainWindow::MainWindow(CuratedResourceManager &curatedResources, QWidget *parent
         statusBar()->showMessage(imageDirectoryError);
     }
 
-    const QString sdCliPath = QStandardPaths::findExecutable(QStringLiteral("sd-cli"));
-    if (sdCliPath.isEmpty()) {
-        statusBar()->showMessage(tr("sd-cli is unavailable"));
-    } else {
-        m_sdCliRunner = new SdCliRunner(sdCliPath, this);
-        connect(m_sdCliRunner,
-                &SdCliRunner::generationProgressChanged,
-                this,
-                &MainWindow::updateGenerationProgress);
-        connect(m_sdCliRunner, &SdCliRunner::generationFinished, this, &MainWindow::handleGenerationFinished);
-        connect(m_sdCliRunner, &SdCliRunner::upscaleFinished, this, &MainWindow::handleUpscaleFinished);
-    }
+    m_serviceClient = new ServiceClient(this);
+    m_generatePanel->setGenerationAvailable(false);
+    connect(m_serviceClient, &ServiceClient::generationProgressChanged, this, &MainWindow::updateGenerationProgress);
+    connect(m_serviceClient, &ServiceClient::generationFinished, this, &MainWindow::handleGenerationFinished);
+    connect(m_serviceClient, &ServiceClient::upscaleFinished, this, &MainWindow::handleUpscaleFinished);
+    connect(m_serviceClient, &ServiceClient::generationOutput, this, [](const QString &stream, const QString &text) {
+        qInfo().noquote() << QStringLiteral("[Kira Service][%1] %2").arg(stream, text);
+    });
+    connect(m_serviceClient, &ServiceClient::capabilitiesChanged, this, &MainWindow::updateServiceCapabilities);
+    connect(m_serviceClient, &ServiceClient::serviceStateChanged, this, [this](const QString &, const QString &message) {
+        if (!m_generationRunning && !m_upscaleRunning) statusBar()->showMessage(message);
+    });
+    m_serviceClient->connectToService();
 
     applyDefaultLayout();
     restoreWindowState();
@@ -444,10 +446,10 @@ void MainWindow::removeAssetFromLibrary(const QString &filePath)
     updateUpscaleAction();
 }
 
-void MainWindow::startGeneration(GenerationRequest request)
+void MainWindow::startGeneration(const ImageGenerationRequest &request)
 {
-    if (m_sdCliRunner == nullptr) {
-        statusBar()->showMessage(tr("sd-cli is unavailable"));
+    if (m_serviceClient == nullptr || !m_serviceClient->canGenerate()) {
+        statusBar()->showMessage(tr("Image generation service is unavailable"));
         return;
     }
 
@@ -455,30 +457,18 @@ void MainWindow::startGeneration(GenerationRequest request)
         statusBar()->showMessage(tr("Enter a prompt before generating"));
         return;
     }
-    if (!m_curatedResources.isInstalled(CuratedResourceId::ImageGenerationDefault)) {
-        statusBar()->showMessage(tr("Image generation model is unavailable"));
-        return;
-    }
-    request.modelPath = m_curatedResources.path(CuratedResourceId::ImageGenerationDefault);
-    if (!QFileInfo(request.modelPath).isFile()) {
-        statusBar()->showMessage(tr("Image generation model is unavailable"));
-        return;
-    }
-
     QString directoryError;
     if (!AppPaths::ensureManagedDirectories(&directoryError)) {
         statusBar()->showMessage(directoryError);
         return;
     }
 
-    request.outputPath = QDir(AppPaths::generatedPath())
+    const QString outputPath = QDir(AppPaths::generatedPath())
                              .filePath(QStringLiteral("generated-%1.png")
                                            .arg(QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyyMMdd-hhmmsszzz"))));
-    if (request.seed < 0) {
-        request.seed = QRandomGenerator::global()->bounded(1, std::numeric_limits<int>::max());
-    }
-
-    if (!m_sdCliRunner->runGeneration(request)) {
+    ImageGenerationRequest serviceRequest = request;
+    if (serviceRequest.seed < 0) serviceRequest.seed = QRandomGenerator::global()->bounded(1, std::numeric_limits<int>::max());
+    if (!m_serviceClient->startGeneration(serviceRequest, outputPath)) {
         statusBar()->showMessage(tr("Generation is already running"));
         return;
     }
@@ -561,7 +551,7 @@ const ImageAsset *MainWindow::activePreviewAsset() const
 
 void MainWindow::updateUpscaleAction()
 {
-    m_upscaleAction->setEnabled(!m_generationRunning && !m_upscaleRunning && activePreviewAsset() != nullptr);
+    m_upscaleAction->setEnabled(m_upscaleAvailable && !m_generationRunning && !m_upscaleRunning && activePreviewAsset() != nullptr);
     m_closePreviewAction->setEnabled(m_previewTabs->currentIndex() >= 0);
 }
 
@@ -581,8 +571,8 @@ void MainWindow::showUpscaleDialog()
 
 void MainWindow::startUpscale(const ImageAsset &source, int scale)
 {
-    if (m_sdCliRunner == nullptr) {
-        statusBar()->showMessage(tr("sd-cli is unavailable"));
+    if (m_serviceClient == nullptr || !m_serviceClient->canUpscale()) {
+        statusBar()->showMessage(tr("Image upscaling service is unavailable"));
         return;
     }
     if (scale != 2 && scale != 4) {
@@ -591,17 +581,6 @@ void MainWindow::startUpscale(const ImageAsset &source, int scale)
     }
     if (!QFileInfo(source.filePath).isFile()) {
         statusBar()->showMessage(tr("The source image is unavailable"));
-        return;
-    }
-
-    const CuratedResourceId resourceId = scale == 4 ? CuratedResourceId::Upscaler4x : CuratedResourceId::Upscaler2x;
-    if (!m_curatedResources.isInstalled(resourceId)) {
-        statusBar()->showMessage(tr("%1 upscaler is unavailable").arg(scale == 4 ? QStringLiteral("4×") : QStringLiteral("2×")));
-        return;
-    }
-    const QString upscalerPath = m_curatedResources.path(resourceId);
-    if (!QFileInfo(upscalerPath).isFile()) {
-        statusBar()->showMessage(tr("%1 upscaler is unavailable").arg(scale == 4 ? QStringLiteral("4×") : QStringLiteral("2×")));
         return;
     }
 
@@ -614,20 +593,27 @@ void MainWindow::startUpscale(const ImageAsset &source, int scale)
     const QString outputPath = QDir(AppPaths::upscaledPath())
                                    .filePath(QStringLiteral("upscaled-%1.png")
                                                  .arg(QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyyMMdd-hhmmsszzz"))));
-    const QStringList arguments = {
-        QStringLiteral("--mode"), QStringLiteral("upscale"),
-        QStringLiteral("--init-img"), source.filePath,
-        QStringLiteral("--upscale-model"), upscalerPath,
-        QStringLiteral("--upscale-repeats"), QStringLiteral("1"),
-        QStringLiteral("--upscale-tile-size"), QStringLiteral("128"),
-        QStringLiteral("--output"), outputPath};
-    if (!m_sdCliRunner->runUpscale(arguments, outputPath)) {
+    if (!m_serviceClient->startUpscale({source.filePath, scale}, outputPath)) {
         statusBar()->showMessage(tr("Upscaling is already running"));
         return;
     }
     m_upscaleRunning = true;
     updateUpscaleAction();
     statusBar()->showMessage(tr("Upscaling image..."));
+}
+
+void MainWindow::showServicePreferences()
+{
+    ServicePreferencesDialog dialog(m_serviceClient, this);
+    if (dialog.exec() == QDialog::Accepted) m_serviceClient->connectToService();
+}
+
+void MainWindow::updateServiceCapabilities(bool generationAvailable, bool upscaleAvailable)
+{
+    m_generationAvailable = generationAvailable;
+    m_upscaleAvailable = upscaleAvailable;
+    m_generatePanel->setGenerationAvailable(generationAvailable);
+    updateUpscaleAction();
 }
 
 void MainWindow::handleUpscaleFinished(const SdCliUpscaleResult &result)

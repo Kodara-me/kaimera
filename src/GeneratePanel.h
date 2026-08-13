@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GenerationRequest.h"
+#include "ImageOperationRequest.h"
 #include "ImageAsset.h"
 
 #include <QWidget>
@@ -25,10 +25,11 @@ public:
     void setSelectedAsset(const ImageAsset *asset);
     void removeAsset(const ImageAsset *asset);
     void setGenerationRunning(bool running);
+    void setGenerationAvailable(bool available);
 
 signals:
     void referenceChanged(const QString &title, const ImageAsset *asset);
-    void generationRequested(const GenerationRequest &request);
+    void generationRequested(const ImageGenerationRequest &request);
 
 private:
     void updateGenerateEnabled();
@@ -49,4 +50,5 @@ private:
     QSlider *m_baseImageStrengthSlider = nullptr;
     const ImageAsset *m_baseImage = nullptr;
     bool m_generationRunning = false;
+    bool m_generationAvailable = true;
 };
