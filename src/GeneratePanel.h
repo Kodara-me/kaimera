@@ -26,6 +26,7 @@ public:
     void removeAsset(const ImageAsset *asset);
     void setGenerationRunning(bool running);
     void setGenerationAvailable(bool available);
+    void setServiceStatus(const QString &status);
 
 signals:
     void referenceChanged(const QString &title, const ImageAsset *asset);
@@ -46,6 +47,9 @@ private:
     QPushButton *m_generateButton;
     ReferenceSlotWidget *m_baseImageReference = nullptr;
     QLabel *m_baseImageHelper = nullptr;
+#if defined(Q_OS_MACOS)
+    QLabel *m_serviceStatus = nullptr;
+#endif
     QWidget *m_baseImageStrengthContainer = nullptr;
     QSlider *m_baseImageStrengthSlider = nullptr;
     const ImageAsset *m_baseImage = nullptr;

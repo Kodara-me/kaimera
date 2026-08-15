@@ -2,7 +2,13 @@
 
 #include "ImageAsset.h"
 
+#if defined(Q_OS_MACOS)
+#include <QWidget>
+using ImageLibraryBase = QWidget;
+#else
 #include <QGroupBox>
+using ImageLibraryBase = QGroupBox;
+#endif
 
 #include <deque>
 
@@ -12,8 +18,9 @@ class QAbstractItemDelegate;
 class QLabel;
 class QComboBox;
 class QLineEdit;
+class QWidget;
 
-class ImageLibraryWidget final : public QGroupBox
+class ImageLibraryWidget final : public ImageLibraryBase
 {
     Q_OBJECT
 

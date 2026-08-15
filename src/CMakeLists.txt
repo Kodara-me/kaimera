@@ -56,6 +56,14 @@ elseif(MSVC)
 endif()
 
 if(APPLE)
+    target_sources(kira-canvas PRIVATE
+        MacPanelSurface.h
+        MacPanelSurface.cpp
+        MacSystemAppearance.h
+        MacSystemAppearance.mm
+        MacWorkspaceSplitter.h
+        MacWorkspaceSplitter.cpp
+    )
     set_target_properties(kira-canvas PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_BUNDLE_NAME "Kira Canvas"

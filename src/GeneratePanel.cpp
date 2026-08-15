@@ -5,6 +5,7 @@
 
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QFrame>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
@@ -32,6 +33,13 @@ QVBoxLayout *labeledColumn(const QString &label, QWidget *control)
     layout->addWidget(control);
     return layout;
 }
+
+QLabel *sectionLabel(const QString &text, const QString &objectName, QWidget *parent)
+{
+    auto *label = new QLabel(text, parent);
+    label->setObjectName(objectName);
+    return label;
+}
 }
 
 GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
@@ -39,12 +47,21 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
 {
     Q_UNUSED(statusBar)
     auto *layout = new QVBoxLayout(this);
+#if defined(Q_OS_MACOS)
+    m_serviceStatus = new QLabel(this);
+    m_serviceStatus->setObjectName(QStringLiteral("generateServiceStatus"));
+    m_serviceStatus->setForegroundRole(QPalette::PlaceholderText);
+    layout->addWidget(m_serviceStatus);
+#endif
     auto *scrollArea = new QScrollArea(this);
+#if defined(Q_OS_MACOS)
+    scrollArea->setFrameShape(QFrame::NoFrame);
+#endif
     scrollArea->setWidgetResizable(true);
     auto *content = new QWidget(scrollArea);
     auto *contentLayout = new QVBoxLayout(content);
 
-    auto *promptLabel = new QLabel(tr("Prompt"), content);
+    auto *promptLabel = sectionLabel(tr("Prompt"), QStringLiteral("generatePromptSection"), content);
     contentLayout->addWidget(promptLabel);
     m_promptEdit = new QPlainTextEdit(content);
     m_promptEdit->setPlaceholderText(tr("Describe the image you want to generate..."));
@@ -58,6 +75,9 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     m_negativePromptEdit->setFixedHeight(60);
     contentLayout->addWidget(m_negativePromptEdit);
 
+#if defined(Q_OS_MACOS)
+    contentLayout->addWidget(sectionLabel(tr("Model Settings"), QStringLiteral("generateModelSection"), content));
+#endif
     auto *samplerLabel = new QLabel(tr("Sampler"), content);
     contentLayout->addWidget(samplerLabel);
     m_samplerSelector = new QComboBox(content);
@@ -79,6 +99,9 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     m_schedulerSelector->addItem(QStringLiteral("GITS"), QStringLiteral("gits"));
     contentLayout->addWidget(m_schedulerSelector);
 
+#if defined(Q_OS_MACOS)
+    contentLayout->addWidget(sectionLabel(tr("Resolution"), QStringLiteral("generateResolutionSection"), content));
+#endif
     m_widthSpinBox = new QSpinBox(content);
     m_widthSpinBox->setRange(256, 4096);
     m_widthSpinBox->setSingleStep(64);
@@ -92,6 +115,9 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     resolutionLayout->addLayout(labeledColumn(tr("Height"), m_heightSpinBox));
     contentLayout->addLayout(resolutionLayout);
 
+#if defined(Q_OS_MACOS)
+    contentLayout->addWidget(sectionLabel(tr("Generation Settings"), QStringLiteral("generateGenerationSection"), content));
+#endif
     m_stepsSpinBox = new QSpinBox(content);
     m_stepsSpinBox->setRange(1, 100);
     m_stepsSpinBox->setValue(28);
@@ -105,7 +131,7 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     generationSettingsLayout->addLayout(labeledColumn(tr("CFG Scale"), m_cfgSpinBox));
     contentLayout->addLayout(generationSettingsLayout);
 
-    auto *seedLabel = new QLabel(tr("Seed"), content);
+    auto *seedLabel = sectionLabel(tr("Seed"), QStringLiteral("generateSeedSection"), content);
     contentLayout->addWidget(seedLabel);
     auto *seedLayout = new QHBoxLayout;
     m_seedSpinBox = new QSpinBox(content);
@@ -122,7 +148,7 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     seedLayout->addWidget(randomizeSeedButton);
     contentLayout->addLayout(seedLayout);
 
-    contentLayout->addWidget(new QLabel(tr("Image Input"), content));
+    contentLayout->addWidget(sectionLabel(tr("Image Input"), QStringLiteral("generateImageInputSection"), content));
     m_baseImageReference = new ReferenceSlotWidget(tr("Base image"), content);
     m_baseImageReference->setToolTip(tr("Uses this image as the starting point for generation."));
     contentLayout->addWidget(m_baseImageReference);
@@ -170,6 +196,8 @@ GeneratePanel::GeneratePanel(QStatusBar *statusBar, QWidget *parent)
     layout->addWidget(scrollArea, 1);
 
     m_generateButton = new QPushButton(tr("Generate"), this);
+    m_generateButton->setObjectName(QStringLiteral("generateButton"));
+    m_generateButton->setAccessibleName(tr("Generate image"));
     m_generateButton->setDefault(true);
     m_generateButton->setEnabled(false);
     connect(m_generateButton, &QPushButton::clicked, this, [this] {
@@ -205,6 +233,15 @@ void GeneratePanel::setGenerationAvailable(bool available)
 {
     m_generationAvailable = available;
     updateGenerateEnabled();
+}
+
+void GeneratePanel::setServiceStatus(const QString &status)
+{
+#if defined(Q_OS_MACOS)
+    m_serviceStatus->setText(status);
+#else
+    Q_UNUSED(status)
+#endif
 }
 
 void GeneratePanel::updateGenerateEnabled()

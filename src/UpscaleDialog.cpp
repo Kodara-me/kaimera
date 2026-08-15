@@ -1,5 +1,6 @@
 #include "UpscaleDialog.h"
 
+
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>

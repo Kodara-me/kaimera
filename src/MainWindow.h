@@ -8,9 +8,12 @@
 class ImageLibraryWidget;
 class GeneratePanel;
 class QCloseEvent;
+class QEvent;
+class QLabel;
 class QAction;
 class QProgressBar;
 class QSplitter;
+class QStackedLayout;
 class ServiceClient;
 class QTabWidget;
 class ImageViewer;
@@ -26,6 +29,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     void setCurrentImage(const ImageAsset *asset, bool showStatus);
@@ -52,6 +56,9 @@ private:
     void updateServiceCapabilities(bool generationAvailable, bool upscaleAvailable);
     void handleUpscaleFinished(const SdCliUpscaleResult &result);
     void applyDefaultLayout();
+    void updateWorkspacePage();
+    void showTransientStatusMessage(const QString &message);
+    void positionTransientStatusMessage();
     void restoreWindowState();
     void saveWindowState();
 
@@ -65,6 +72,12 @@ private:
     QProgressBar *m_generationProgressBar = nullptr;
     ServiceClient *m_serviceClient = nullptr;
     QSplitter *m_workspaceSplitter = nullptr;
+    QStackedLayout *m_workspacePages = nullptr;
+#if defined(Q_OS_MACOS)
+    QWidget *m_previewWorkspace = nullptr;
+    QLabel *m_transientStatusMessage = nullptr;
+    QTimer *m_transientStatusTimer = nullptr;
+#endif
     bool m_generationRunning = false;
     bool m_upscaleRunning = false;
     bool m_generationAvailable = false;

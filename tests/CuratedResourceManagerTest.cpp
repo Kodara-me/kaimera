@@ -16,6 +16,8 @@
 #include <QComboBox>
 #include <QFile>
 #include <QFileInfo>
+#include <QFrame>
+#include <QGroupBox>
 #include <QHostAddress>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -28,7 +30,9 @@
 #include <QPlainTextEdit>
 #include <QSignalSpy>
 #include <QSettings>
+#include <QScrollArea>
 #include <QSlider>
+#include <QSplitter>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTemporaryDir>
@@ -36,6 +40,7 @@
 #include <QStatusBar>
 #include <QToolButton>
 #include <QTabWidget>
+#include <QToolBar>
 #include <QWebSocket>
 #include <QWebSocketServer>
 #include <QtTest>
@@ -210,6 +215,13 @@ private slots:
     void filtersLibraryAssets();
     void switchesLibraryViewModesAndRequestsTrash();
     void displaysPreviewOnlyForAssignedReference();
+#if defined(Q_OS_MACOS)
+    void usesDirectQtMacControls();
+    void usesFlatMacSideRegions();
+    void usesSubtleMacSplitters();
+    void usesThreeRoundedMacWorkspacePanels();
+    void usesTransientMacStatusMessages();
+#endif
 };
 
 void CuratedResourceManagerTest::downloadsVerifiesAndUsesMetadata()
@@ -795,6 +807,62 @@ void CuratedResourceManagerTest::displaysUpscaleDialogResolution()
     QCOMPARE(dialog.outputSize(), QSize(4096, 3072));
     QCOMPARE(finalResolution->text(), QStringLiteral("4096 × 3072"));
 }
+
+#if defined(Q_OS_MACOS)
+void CuratedResourceManagerTest::usesDirectQtMacControls()
+{
+    MainWindow window;
+    window.show();
+    QTest::qWait(1);
+    QVERIFY(window.findChildren<QToolBar *>().isEmpty());
+    QVERIFY(window.findChild<QWidget *>(QStringLiteral("macMaterialSurface")) == nullptr);
+
+    auto *generateButton = window.findChild<QPushButton *>(QStringLiteral("generateButton"));
+    QVERIFY(generateButton != nullptr);
+    QVERIFY(generateButton->isVisible());
+}
+
+void CuratedResourceManagerTest::usesFlatMacSideRegions()
+{
+    const std::deque<ImageAsset> assets;
+    ImageLibraryWidget library(assets);
+    QWidget *libraryRoot = &library;
+    QVERIFY(qobject_cast<QGroupBox *>(libraryRoot) == nullptr);
+
+    GeneratePanel panel(nullptr);
+    auto *scrollArea = panel.findChild<QScrollArea *>();
+    QVERIFY(scrollArea != nullptr);
+    QCOMPARE(scrollArea->frameShape(), QFrame::NoFrame);
+    QVERIFY(panel.findChild<QLabel *>(QStringLiteral("generatePromptSection")) != nullptr);
+    QVERIFY(panel.findChild<QLabel *>(QStringLiteral("generateModelSection")) != nullptr);
+    QVERIFY(panel.findChild<QLabel *>(QStringLiteral("generateImageInputSection")) != nullptr);
+}
+
+void CuratedResourceManagerTest::usesSubtleMacSplitters()
+{
+    MainWindow window;
+    auto *splitter = window.findChild<QSplitter *>();
+    QVERIFY(splitter != nullptr);
+    QCOMPARE(splitter->count(), 3);
+    QCOMPARE(splitter->handleWidth(), 10);
+}
+
+void CuratedResourceManagerTest::usesThreeRoundedMacWorkspacePanels()
+{
+    MainWindow window;
+    QCOMPARE(window.findChildren<QWidget *>(QStringLiteral("macWorkspacePanel")).size(), 3);
+}
+
+void CuratedResourceManagerTest::usesTransientMacStatusMessages()
+{
+    MainWindow window;
+    window.show();
+    QTest::qWait(1);
+    QVERIFY(!window.statusBar()->isVisible());
+    QVERIFY(window.findChild<QLabel *>(QStringLiteral("transientStatusMessage")) != nullptr);
+    QVERIFY(window.findChild<QLabel *>(QStringLiteral("generateServiceStatus")) != nullptr);
+}
+#endif
 
 void CuratedResourceManagerTest::enablesUpscaleForActivePreview()
 {

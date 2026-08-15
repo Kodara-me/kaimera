@@ -197,11 +197,18 @@ public:
 }
 
 ImageLibraryWidget::ImageLibraryWidget(const std::deque<ImageAsset> &assets, QWidget *parent)
-    : QGroupBox(tr("Library"), parent)
+    : ImageLibraryBase(parent)
     , m_assets(assets)
     , m_thumbnailView(new QListWidget(this))
 {
     auto *layout = new QVBoxLayout(this);
+#if defined(Q_OS_MACOS)
+    auto *title = new QLabel(tr("Library"), this);
+    title->setObjectName(QStringLiteral("librarySectionTitle"));
+    layout->addWidget(title);
+#else
+    setTitle(tr("Library"));
+#endif
 
     auto *searchRow = new QHBoxLayout;
     m_searchField = new QLineEdit(this);
@@ -228,6 +235,8 @@ ImageLibraryWidget::ImageLibraryWidget(const std::deque<ImageAsset> &assets, QWi
     gridButton->setCheckable(true);
     gridButton->setChecked(true);
     gridButton->setIcon(systemIcon(QStringLiteral("view-grid"), QStyle::SP_FileDialogDetailedView, this));
+    const int smallIconSize = style()->pixelMetric(QStyle::PM_SmallIconSize);
+    gridButton->setIconSize(QSize(smallIconSize, smallIconSize));
     gridButton->setToolTip(tr("Grid view"));
     viewModeGroup->addButton(gridButton);
     viewRow->addWidget(gridButton);
@@ -235,6 +244,7 @@ ImageLibraryWidget::ImageLibraryWidget(const std::deque<ImageAsset> &assets, QWi
     listButton->setObjectName(QStringLiteral("libraryListButton"));
     listButton->setCheckable(true);
     listButton->setIcon(systemIcon(QStringLiteral("view-list"), QStyle::SP_FileDialogListView, this));
+    listButton->setIconSize(QSize(smallIconSize, smallIconSize));
     listButton->setToolTip(tr("List view"));
     viewModeGroup->addButton(listButton);
     viewRow->addWidget(listButton);

@@ -4,6 +4,10 @@
 #include "GeneratePanel.h"
 #include "ImageLibraryWidget.h"
 #include "ImageViewer.h"
+#if defined(Q_OS_MACOS)
+#include "MacPanelSurface.h"
+#include "MacWorkspaceSplitter.h"
+#endif
 #include "ServiceClient.h"
 #include "ServicePreferencesDialog.h"
 #include "SystemIcon.h"
@@ -13,11 +17,14 @@
 #include <QCloseEvent>
 #include <QDateTime>
 #include <QDir>
+#include <QEvent>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QImageReader>
+#include <QLabel>
 #include <QMessageBox>
+#include <QPalette>
 #include <QMenu>
 #include <QMenuBar>
 #include <QProgressBar>
@@ -26,6 +33,7 @@
 #include <QSettings>
 #include <QSplitter>
 #include <QStatusBar>
+#include <QStackedLayout>
 #include <QStyle>
 #include <QTabWidget>
 #include <QTabBar>
@@ -85,11 +93,9 @@ MainWindow::MainWindow(QWidget *parent)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
 
+#if !defined(Q_OS_MACOS)
     auto *toolBar = addToolBar(tr("Main"));
     toolBar->setMovable(false);
-#if defined(Q_OS_MACOS)
-    toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-#else
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 #endif
     m_importAction = new QAction(systemIcon(QStringLiteral("document-open"), QStyle::SP_DialogOpenButton, this),
@@ -102,8 +108,12 @@ MainWindow::MainWindow(QWidget *parent)
     m_upscaleAction = new QAction(systemIcon(QStringLiteral("zoom-in"), QStyle::SP_ArrowUp, this), tr("Upscale"), this);
     m_upscaleAction->setObjectName(QStringLiteral("upscaleAction"));
     m_upscaleAction->setEnabled(false);
+    m_importAction->setToolTip(tr("Import Photo"));
+    m_upscaleAction->setToolTip(tr("Upscale the active preview"));
+#if !defined(Q_OS_MACOS)
     toolBar->addAction(m_importAction);
     toolBar->addAction(m_upscaleAction);
+#endif
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(m_importAction);
@@ -112,6 +122,9 @@ MainWindow::MainWindow(QWidget *parent)
     imageMenu->addAction(m_upscaleAction);
     QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
     auto *servicePreferencesAction = settingsMenu->addAction(tr("Service Preferences…"));
+#if defined(Q_OS_MACOS)
+    servicePreferencesAction->setMenuRole(QAction::PreferencesRole);
+#endif
 
     m_generationProgressBar = new QProgressBar(statusBar());
     m_generationProgressBar->setRange(0, 100);
@@ -120,28 +133,96 @@ MainWindow::MainWindow(QWidget *parent)
     m_generationProgressBar->setFixedWidth(120);
     m_generationProgressBar->hide();
     statusBar()->addPermanentWidget(m_generationProgressBar);
+#if defined(Q_OS_MACOS)
+    statusBar()->setSizeGripEnabled(false);
+#endif
 
     m_library = new ImageLibraryWidget(m_assets, this);
+#if defined(Q_OS_MACOS)
+    m_library->setMinimumWidth(0);
+#else
     m_library->setMinimumWidth(250);
+#endif
 
     auto *workspace = new QWidget(this);
     auto *workspaceLayout = new QVBoxLayout(workspace);
     workspaceLayout->setContentsMargins(0, 0, 0, 0);
+#if defined(Q_OS_MACOS)
+    m_previewWorkspace = workspace;
+    m_previewWorkspace->installEventFilter(this);
+    m_transientStatusMessage = new QLabel(m_previewWorkspace);
+    m_transientStatusMessage->setObjectName(QStringLiteral("transientStatusMessage"));
+    m_transientStatusMessage->setAlignment(Qt::AlignCenter);
+    m_transientStatusMessage->setForegroundRole(QPalette::ToolTipText);
+    m_transientStatusMessage->setBackgroundRole(QPalette::ToolTipBase);
+    m_transientStatusMessage->setAutoFillBackground(true);
+    m_transientStatusMessage->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_transientStatusMessage->hide();
+    m_transientStatusTimer = new QTimer(this);
+    m_transientStatusTimer->setSingleShot(true);
+    connect(m_transientStatusTimer, &QTimer::timeout, m_transientStatusMessage, &QWidget::hide);
+    connect(statusBar(), &QStatusBar::messageChanged, this, &MainWindow::showTransientStatusMessage);
+#endif
     m_previewTabs = new QTabWidget(workspace);
     m_previewTabs->setTabsClosable(true);
+#if defined(Q_OS_MACOS)
+    m_previewTabs->setDocumentMode(true);
+    m_workspacePages = new QStackedLayout;
+    m_workspacePages->setContentsMargins(0, 0, 0, 0);
+    auto *emptyWorkspace = new QLabel(tr("Open an image to begin"), workspace);
+    emptyWorkspace->setAlignment(Qt::AlignCenter);
+    m_workspacePages->addWidget(emptyWorkspace);
+    m_workspacePages->addWidget(m_previewTabs);
+    workspaceLayout->addLayout(m_workspacePages, 1);
+#else
     workspaceLayout->addWidget(m_previewTabs, 1);
+#endif
 
     m_generatePanel = new GeneratePanel(statusBar(), this);
+#if defined(Q_OS_MACOS)
+    m_generatePanel->setMinimumWidth(0);
+#else
     m_generatePanel->setMinimumWidth(280);
+#endif
 
+#if defined(Q_OS_MACOS)
+    auto *workspaceContainer = new QWidget(this);
+    auto *workspaceContainerLayout = new QVBoxLayout(workspaceContainer);
+    workspaceContainerLayout->setContentsMargins(12, 12, 12, 8);
+
+    auto *libraryPanel = new MacPanelSurface(workspaceContainer);
+    auto *libraryPanelLayout = new QVBoxLayout(libraryPanel);
+    libraryPanelLayout->setContentsMargins(12, 12, 12, 12);
+    libraryPanelLayout->addWidget(m_library);
+    libraryPanel->setMinimumWidth(260);
+
+    auto *previewPanel = new MacPanelSurface(workspaceContainer);
+    auto *previewPanelLayout = new QVBoxLayout(previewPanel);
+    previewPanelLayout->setContentsMargins(12, 12, 12, 12);
+    previewPanelLayout->addWidget(workspace);
+
+    auto *generatePanel = new MacPanelSurface(workspaceContainer);
+    auto *generatePanelLayout = new QVBoxLayout(generatePanel);
+    generatePanelLayout->setContentsMargins(12, 12, 12, 12);
+    generatePanelLayout->addWidget(m_generatePanel);
+    generatePanel->setMinimumWidth(320);
+
+    m_workspaceSplitter = new MacWorkspaceSplitter(workspaceContainer);
+    m_workspaceSplitter->addWidget(libraryPanel);
+    m_workspaceSplitter->addWidget(previewPanel);
+    m_workspaceSplitter->addWidget(generatePanel);
+    workspaceContainerLayout->addWidget(m_workspaceSplitter);
+    setCentralWidget(workspaceContainer);
+#else
     m_workspaceSplitter = new QSplitter(Qt::Horizontal, this);
     m_workspaceSplitter->addWidget(m_library);
     m_workspaceSplitter->addWidget(workspace);
     m_workspaceSplitter->addWidget(m_generatePanel);
+    setCentralWidget(m_workspaceSplitter);
+#endif
     m_workspaceSplitter->setStretchFactor(0, 0);
     m_workspaceSplitter->setStretchFactor(1, 1);
     m_workspaceSplitter->setStretchFactor(2, 0);
-    setCentralWidget(m_workspaceSplitter);
 
     connect(m_importAction, &QAction::triggered, this, &MainWindow::openImages);
     connect(m_closePreviewAction, &QAction::triggered, this, &MainWindow::closeCurrentPreview);
@@ -157,6 +238,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_previewTabs, &QTabWidget::currentChanged, this, [this](int index) {
         if (index < 0) {
             updateUpscaleAction();
+            updateWorkspacePage();
             return;
         }
         const QString assetPath = m_previewTabs->tabBar()->tabData(index).toString();
@@ -170,6 +252,7 @@ MainWindow::MainWindow(QWidget *parent)
         m_library->selectAsset(&*asset);
         setCurrentImage(&*asset, false);
         updateUpscaleAction();
+        updateWorkspacePage();
     });
     connect(m_generatePanel,
             &GeneratePanel::referenceChanged,
@@ -197,13 +280,21 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(m_serviceClient, &ServiceClient::capabilitiesChanged, this, &MainWindow::updateServiceCapabilities);
     connect(m_serviceClient, &ServiceClient::serviceStateChanged, this, [this](const QString &, const QString &message) {
+#if defined(Q_OS_MACOS)
+        m_generatePanel->setServiceStatus(message);
+#endif
         if (!m_generationRunning && !m_upscaleRunning) statusBar()->showMessage(message);
     });
     m_serviceClient->connectToService();
 
+#if defined(Q_OS_MACOS)
+    statusBar()->hide();
+#endif
+
     applyDefaultLayout();
     restoreWindowState();
     updateUpscaleAction();
+    updateWorkspacePage();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -253,6 +344,7 @@ void MainWindow::openImagePreview(const ImageAsset *asset)
     const int index = m_previewTabs->addTab(preview, asset->name);
     m_previewTabs->tabBar()->setTabData(index, asset->filePath);
     m_previewTabs->setCurrentIndex(index);
+    updateWorkspacePage();
     updateUpscaleAction();
 }
 
@@ -309,6 +401,7 @@ void MainWindow::closePreview(int index)
     QWidget *preview = m_previewTabs->widget(index);
     m_previewTabs->removeTab(index);
     preview->deleteLater();
+    updateWorkspacePage();
     updateUpscaleAction();
 }
 
@@ -642,7 +735,67 @@ void MainWindow::handleUpscaleFinished(const SdCliUpscaleResult &result)
 void MainWindow::applyDefaultLayout()
 {
     resize(1600, 1000);
+#if defined(Q_OS_MACOS)
+    m_workspaceSplitter->setSizes({260, 1020, 320});
+#else
     m_workspaceSplitter->setSizes({340, 880, 380});
+#endif
+}
+
+void MainWindow::updateWorkspacePage()
+{
+#if defined(Q_OS_MACOS)
+    if (m_workspacePages != nullptr) {
+        m_workspacePages->setCurrentIndex(m_previewTabs->count() == 0 ? 0 : 1);
+    }
+#endif
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+#if defined(Q_OS_MACOS)
+    if (watched == m_previewWorkspace && (event->type() == QEvent::Resize || event->type() == QEvent::Show)) {
+        positionTransientStatusMessage();
+    }
+#else
+    Q_UNUSED(watched)
+    Q_UNUSED(event)
+#endif
+    return QMainWindow::eventFilter(watched, event);
+}
+
+void MainWindow::showTransientStatusMessage(const QString &message)
+{
+#if defined(Q_OS_MACOS)
+    if (message.isEmpty()) {
+        m_transientStatusMessage->hide();
+        return;
+    }
+
+    m_transientStatusMessage->setText(message);
+    m_transientStatusMessage->adjustSize();
+    positionTransientStatusMessage();
+    m_transientStatusMessage->show();
+    m_transientStatusMessage->raise();
+    m_transientStatusTimer->start(4000);
+#else
+    Q_UNUSED(message)
+#endif
+}
+
+void MainWindow::positionTransientStatusMessage()
+{
+#if defined(Q_OS_MACOS)
+    if (m_previewWorkspace == nullptr || m_transientStatusMessage == nullptr) {
+        return;
+    }
+
+    const QSize preferredSize = m_transientStatusMessage->sizeHint().expandedTo({160, 24});
+    const int width = qMin(preferredSize.width() + 24, m_previewWorkspace->width() - 24);
+    m_transientStatusMessage->resize(width, preferredSize.height() + 8);
+    m_transientStatusMessage->move((m_previewWorkspace->width() - width) / 2,
+                                   m_previewWorkspace->height() - m_transientStatusMessage->height() - 16);
+#endif
 }
 
 void MainWindow::restoreWindowState()
