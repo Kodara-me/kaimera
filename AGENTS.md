@@ -30,6 +30,28 @@
 - Keep `README.md` concise and accurate as the project entry point. Keep `CONTRIBUTING.md` accurate as the detailed Linux and macOS contributor setup guide.
 - Every commit must use Conventional Commits: `type(optional-scope): imperative summary`. Use standard types (`feat`, `fix`, `docs`, `refactor`, `test`, `build`, `ci`, `chore`, or `perf`); mark breaking changes with `!` or a `BREAKING CHANGE:` footer.
 - Use Git directly for repository operations such as status, diff, branch, fetch, pull, add, commit, and push. Do not require GitHub CLI for these operations; use it only when its GitHub-specific capabilities, such as pull-request or issue management, are needed.
+- When the requested publishing workflow includes a pull request, use `gh pr create --draft` after the branch is pushed if `gh` is installed and authenticated. Do not require `gh` for committing or pushing.
+- Write every pull request with this reader-friendly template, using concrete content from the diff:
+
+  ```md
+  ## Summary
+
+  - <concise description of the user-visible or developer-facing result>
+
+  ## Changes
+
+  - <key implementation or documentation change>
+
+  ## Validation
+
+  - <commands run and their outcome, or why validation was not run>
+
+  ## Notes
+
+  - <platform impact, follow-up, limitation, or `None`>
+  ```
+
+- If `gh` is unavailable or unauthenticated, do not block the commit or push. State that no pull request was created and provide the completed pull-request title and body in the final chat response inside a Markdown code block.
 
 ## UI Principles
 
