@@ -38,6 +38,7 @@
 #include <QTabWidget>
 #include <QTabBar>
 #include <QToolBar>
+#include <QToolButton>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -95,6 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 #if !defined(Q_OS_MACOS)
     auto *toolBar = addToolBar(tr("Main"));
+    toolBar->setObjectName(QStringLiteral("mainToolBar"));
     toolBar->setMovable(false);
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 #endif
@@ -115,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent)
     toolBar->addAction(m_upscaleAction);
 #endif
 
+#if defined(Q_OS_MACOS)
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(m_importAction);
     fileMenu->addAction(m_closePreviewAction);
@@ -122,8 +125,31 @@ MainWindow::MainWindow(QWidget *parent)
     imageMenu->addAction(m_upscaleAction);
     QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
     auto *servicePreferencesAction = settingsMenu->addAction(tr("Service Preferences…"));
-#if defined(Q_OS_MACOS)
     servicePreferencesAction->setMenuRole(QAction::PreferencesRole);
+#else
+    auto *toolbarSpacer = new QWidget(toolBar);
+    toolbarSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    toolBar->addWidget(toolbarSpacer);
+
+    auto *mainMenuButton = new QToolButton(toolBar);
+    mainMenuButton->setObjectName(QStringLiteral("mainMenuButton"));
+    mainMenuButton->setIcon(systemIcon(QStringLiteral("application-menu"), QStyle::SP_TitleBarMenuButton, this));
+    mainMenuButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    mainMenuButton->setPopupMode(QToolButton::InstantPopup);
+    mainMenuButton->setToolTip(tr("Main Menu"));
+    mainMenuButton->setAccessibleName(tr("Main Menu"));
+    mainMenuButton->setAutoRaise(true);
+
+    auto *mainMenu = new QMenu(mainMenuButton);
+    mainMenu->setObjectName(QStringLiteral("mainMenu"));
+    mainMenu->addAction(m_importAction);
+    mainMenu->addAction(m_closePreviewAction);
+    mainMenu->addSeparator();
+    mainMenu->addAction(m_upscaleAction);
+    mainMenu->addSeparator();
+    auto *servicePreferencesAction = mainMenu->addAction(tr("Service Preferences…"));
+    mainMenuButton->setMenu(mainMenu);
+    toolBar->addWidget(mainMenuButton);
 #endif
 
     m_generationProgressBar = new QProgressBar(statusBar());

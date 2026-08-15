@@ -918,6 +918,7 @@ void CuratedResourceManagerTest::providesSharedMainWindowActions()
 
     MainWindow window;
 
+#if defined(Q_OS_MACOS)
     QMenuBar *menuBar = window.menuBar();
     QVERIFY(menuBar != nullptr);
     QCOMPARE(menuBar->actions().size(), 3);
@@ -936,6 +937,35 @@ void CuratedResourceManagerTest::providesSharedMainWindowActions()
     const QList<QAction *> imageActions = menuBar->actions().at(1)->menu()->actions();
     QCOMPARE(imageActions.size(), 1);
     QCOMPARE(imageActions.at(0), window.findChild<QAction *>(QStringLiteral("upscaleAction")));
+#else
+    QVERIFY(window.menuWidget() == nullptr);
+
+    auto *toolBar = window.findChild<QToolBar *>(QStringLiteral("mainToolBar"));
+    QVERIFY(toolBar != nullptr);
+    auto *mainMenuButton = window.findChild<QToolButton *>(QStringLiteral("mainMenuButton"));
+    QVERIFY(mainMenuButton != nullptr);
+    QCOMPARE(mainMenuButton->toolButtonStyle(), Qt::ToolButtonIconOnly);
+    QCOMPARE(mainMenuButton->popupMode(), QToolButton::InstantPopup);
+    QCOMPARE(mainMenuButton->toolTip(), QStringLiteral("Main Menu"));
+    QCOMPARE(mainMenuButton->accessibleName(), QStringLiteral("Main Menu"));
+    window.show();
+    QTest::qWait(1);
+    QVERIFY(mainMenuButton->geometry().center().x() > toolBar->contentsRect().center().x());
+
+    QMenu *mainMenu = mainMenuButton->menu();
+    QVERIFY(mainMenu != nullptr);
+    const QList<QAction *> mainMenuActions = mainMenu->actions();
+    QCOMPARE(mainMenuActions.size(), 6);
+    QCOMPARE(mainMenuActions.at(0)->text(), QStringLiteral("Import Photo"));
+    QCOMPARE(mainMenuActions.at(0)->shortcut(), QKeySequence(QKeySequence::Open));
+    QCOMPARE(mainMenuActions.at(1)->text(), QStringLiteral("Close Preview"));
+    QCOMPARE(mainMenuActions.at(1)->shortcut(), QKeySequence(QKeySequence::Close));
+    QVERIFY(!mainMenuActions.at(1)->isEnabled());
+    QVERIFY(mainMenuActions.at(2)->isSeparator());
+    QCOMPARE(mainMenuActions.at(3), window.findChild<QAction *>(QStringLiteral("upscaleAction")));
+    QVERIFY(mainMenuActions.at(4)->isSeparator());
+    QCOMPARE(mainMenuActions.at(5)->text(), QStringLiteral("Service Preferences…"));
+#endif
 }
 
 void CuratedResourceManagerTest::filtersLibraryAssets()

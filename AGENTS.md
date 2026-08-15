@@ -23,6 +23,13 @@
 - Build and test after each implementation slice.
 - Fix warnings and errors introduced by our changes.
 - Keep documentation synchronized when architecture or commands change.
+- When a change affects build requirements, setup commands, supported platforms, user-visible workflows, storage or service behavior, or architecture, update the applicable README, contributor guide, and/or this durable project contract in the same change.
+
+## Documentation and Git Workflow
+
+- Keep `README.md` concise and accurate as the project entry point. Keep `CONTRIBUTING.md` accurate as the detailed Linux and macOS contributor setup guide.
+- Every commit must use Conventional Commits: `type(optional-scope): imperative summary`. Use standard types (`feat`, `fix`, `docs`, `refactor`, `test`, `build`, `ci`, `chore`, or `perf`); mark breaking changes with `!` or a `BREAKING CHANGE:` footer.
+- Use Git directly for repository operations such as status, diff, branch, fetch, pull, add, commit, and push. Do not require GitHub CLI for these operations; use it only when its GitHub-specific capabilities, such as pull-request or issue management, are needed.
 
 ## UI Principles
 
@@ -60,7 +67,9 @@
 - Managed models live in Kira Canvas storage. Any future installation workflow must copy rather than move or delete the user’s source file, must not silently overwrite an existing destination, and must not infer a model category from its filename.
 - Model discovery scans only Kira Canvas managed storage and identifies files without loading or validating them. Image output storage remains separate under the user’s standard Pictures location.
 - Keep the main toolbar minimal: Import Photo and active-preview Upscale are the only top-level actions. Do not add automatic downloads or filesystem watchers without a concrete requirement.
-- The File and Image menus reuse the existing Import, Close Preview, and Upscale actions. On macOS, use the native menu bar, standard Command shortcuts, and unified title/toolbar presentation; on Linux, let Qt’s desktop integration choose appearance and icons.
+- On Linux, do not create a top menu bar. Keep Import Photo and active-preview Upscale as the only left-side toolbar actions, and put Import Photo, Close Preview, Upscale, and Service Preferences in a right-aligned, icon-only system `application-menu` toolbar button.
+- On macOS, retain the native File, Image, and Settings menu bar, standard Command shortcuts and menu roles, unified title/toolbar presentation, and no Qt toolbar.
+- Reuse the same actions on each platform surface so their shortcuts and enabled states remain synchronized; cover Linux and macOS layouts with platform-specific UI tests.
 - Kira Service uses only the system-installed `sd-cli`, resolved with `QStandardPaths::findExecutable("sd-cli")`; it never owns, installs, bundles, or links stable-diffusion.cpp. Desktop clients never invoke it directly.
 - AI workflows use one-shot, workflow-specific `sd-cli` QProcess executions on Kira Service. The standalone service uses a versioned WebSocket protocol for typed image requests, progress, raw output, and binary image transfer; do not introduce sd-server or HTTP inference communication.
 - Kira Service owns curated resources, temporary job storage, and a single-worker FIFO GPU queue. The desktop owns its Library and writes completed returned images into its own managed output folders. Service input/output paths are never exposed over the network.

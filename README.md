@@ -2,6 +2,8 @@
 
 Kira Canvas is a native Qt desktop application for Linux and macOS, intended for AI-assisted image generation and editing. It follows the active desktop appearance: Qt’s Plasma and GNOME integration on Linux, and the Aqua/Cocoa style on macOS.
 
+For complete Linux and macOS contributor setup instructions, including dependency-install examples, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Status
 
 Images can be imported into the persistent Library with the native Open dialog. The Library stores image paths through Qt settings and restores readable files from their original locations on the next launch. Search matches filenames, and category filters distinguish Generated, Imported, and Upscaled images. The Library offers both icon and list views; selected source images can be moved to the desktop Trash from its context menu or with Delete on Linux and Command-Backspace on macOS after confirmation. Library selection drives the optional Generate base image. An active preview tab enables the toolbar’s Upscale action, which offers 2× or 4× scaling and imports the result into the Library. Generation and upscaling are submitted to a separately installed Kira Service; each desktop keeps its own Library and managed output folders.
@@ -51,7 +53,7 @@ It listens only on `127.0.0.1:9384` by default. For a trusted home LAN, create a
 ./build/src/kira-service --listen 192.168.1.20 --port 9384 --token-file /path/to/kira-service.token
 ```
 
-Configure the same `ws://host:port` address and token through **Settings → Service Preferences** on each desktop. The token is saved in that desktop user's Qt settings. LAN mode is unencrypted and must not be port-forwarded or used on an untrusted network. Use a private VPN or add TLS in a future deployment slice for remote access.
+Configure the same `ws://host:port` address and token through the **Service Preferences** menu action on each desktop. The token is saved in that desktop user's Qt settings. LAN mode is unencrypted and must not be port-forwarded or used on an untrusted network. Use a private VPN or add TLS in a future deployment slice for remote access.
 
 ### Linux system service installation
 
@@ -91,7 +93,7 @@ The installer validates the generated unit with `systemd-analyze verify` when av
 - C++20-capable compiler
 - Qt 6 Widgets, Network, and WebSockets development files
 
-On Linux, install the distribution’s Qt desktop integration for the desktop you use (such as Plasma Integration for KDE Plasma or the Qt GTK platform theme for GNOME) so Qt can follow its native palette, icons, fonts, and dialogs.
+`sd-cli` is not needed to build either executable. The separately run `kira-service` requires a system-installed `sd-cli` only when performing generation or upscaling. See [CONTRIBUTING.md](CONTRIBUTING.md) for Linux and macOS setup details, including recommended desktop integration packages on Linux and Homebrew Qt configuration on macOS.
 
 ## Build
 
