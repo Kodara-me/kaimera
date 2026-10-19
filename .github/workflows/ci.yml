@@ -23,9 +23,10 @@ jobs:
     container: archlinux:base-devel
     steps:
       - name: Install dependencies
+        # The layout tests measure text: without a font the container falls back to wide glyphs.
         run: |
           pacman -Syu --noconfirm --needed \
-            git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive
+            git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive noto-fonts
 
       - name: Check out
         uses: actions/checkout@v4

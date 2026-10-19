@@ -24,9 +24,10 @@ jobs:
       TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - name: Install dependencies
+        # The layout tests measure text: without a font the container falls back to wide glyphs.
         run: |
           pacman -Syu --noconfirm --needed \
-            git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive github-cli
+            git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive noto-fonts github-cli
 
       - name: Check out
         uses: actions/checkout@v4
