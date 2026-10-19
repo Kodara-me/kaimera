@@ -1,0 +1,41 @@
+# Builds Kaimera and runs every test for every push to main and every pull request. Ardoise
+# and the Nukleus SDK are cloned by CMake at their pinned tags; no Nukleus service is needed,
+# the tests use fake servers.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test (Arch Linux)
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive
+
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        # Every test draws offscreen (QT_QPA_PLATFORM=offscreen, set by CMake).
+        run: ctest --test-dir build --output-on-failure

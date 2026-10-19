@@ -1,0 +1,30 @@
+name: Idea
+description: A proposal to discuss before any code is written.
+labels: [idea]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kaimera grows in small slices. Model management, storage and execution belong to
+        [Nukleus](https://github.com/jstmichel/nukleus), and shared widgets to
+        [Ardoise](https://github.com/jstmichel/ardoise). See
+        [CONTRIBUTING.md](https://github.com/jstmichel/kaimera/blob/main/CONTRIBUTING.md).
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea
+      description: What Kaimera would do, from your point of view.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The problem it solves, or what it makes easier today.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: How we would know it works
+      description: Observable results, for example "Upscale on a 1024 × 1024 image adds a 2048 × 2048 one".

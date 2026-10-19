@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Kaimera
+Comment=Create and edit images with AI models
+Exec="@CMAKE_INSTALL_FULL_BINDIR@/kaimera"
+Icon=me.kodara.kaimera
+Terminal=false
+Categories=Graphics;
+StartupWMClass=Kaimera

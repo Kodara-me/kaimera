@@ -1,0 +1,22 @@
+/build/
+/build-*/
+/CMakeCache.txt
+/CMakeFiles/
+/CTestTestfile.cmake
+/cmake_install.cmake
+/install_manifest.txt
+/compile_commands.json
+/.cache/
+/.codex/TODO.md
+/.idea/
+# Keep shared VS Code build and debug tasks versioned. Machine-specific settings
+# such as a local Qt installation path stay ignored.
+/.vscode/*
+!/.vscode/
+!/.vscode/launch.json
+!/.vscode/tasks.json
+*~
+*.swp
+*.swo
+*.user
+*.user.*

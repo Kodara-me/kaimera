@@ -1,0 +1,58 @@
+name: Bug
+description: Something in Kaimera does not work as the README or the documentation say.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please leave out personal data: the service token, LAN
+        addresses, private prompts and images are not needed. Problems with model
+        installation, routing or the job queue belong to
+        [Nukleus](https://github.com/jstmichel/nukleus/issues).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead. A screenshot helps for visual issues.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open New image, choose the Photorealism preset…
+        2. …
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Error message or diagnostics
+      description: For a failed job, use Copy error on its history tile. Remove anything private.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Kaimera version
+      description: "`kaimera --version`, or `git rev-parse --short HEAD` for a source build."
+      placeholder: "Kaimera 0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: nukleus
+    attributes:
+      label: Nukleus version and models
+      placeholder: "Nukleus v0.1.0, SDXL preset, Qwen2.5 14B enhancer"
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Linux (X11)
+        - Linux (Wayland)
+        - macOS
+        - Windows
+        - Build or installation
+    validations:
+      required: true
