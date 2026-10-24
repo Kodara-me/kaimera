@@ -48,8 +48,8 @@ Every screen is described in the [user guide](docs/user-guide.md).
 
 ## Status
 
-Version 0.1.0, the first release. Release notes:
-[docs/release-notes/0.1.0.md](docs/release-notes/0.1.0.md). CI builds and tests on Linux;
+Version 0.2.0, the first published release. Release notes:
+[docs/release-notes/0.2.0.md](docs/release-notes/0.2.0.md). CI builds and tests on Linux;
 macOS and Windows builds still need checks on real desktops.
 
 ## Requirements

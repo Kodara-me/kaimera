@@ -52,8 +52,8 @@ Chaque écran est décrit dans le [guide d'utilisation](docs/user-guide.md) (en 
 
 ## État
 
-Version 0.1.0, la première. Notes de version :
-[docs/release-notes/0.1.0.md](docs/release-notes/0.1.0.md) (en anglais). La CI compile et
+Version 0.2.0, la première publiée. Notes de version :
+[docs/release-notes/0.2.0.md](docs/release-notes/0.2.0.md) (en anglais). La CI compile et
 teste sous Linux ; les versions macOS et Windows restent à vérifier sur de vrais bureaux.
 
 ## Prérequis
