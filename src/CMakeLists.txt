@@ -14,7 +14,7 @@ add_executable(kaimera
     main.cpp
 )
 
-target_link_libraries(kaimera PRIVATE danbooru-dictionary Nukleus::SDK Ardoise::Widgets Qt6::Network Qt6::Widgets)
+target_link_libraries(kaimera PRIVATE danbooru-dictionary Nukleus::SDK Ardoise::Widgets Qt6::Multimedia Qt6::Network Qt6::Widgets)
 target_compile_definitions(kaimera PRIVATE KAIMERA_VERSION="${PROJECT_VERSION}")
 
 if(WIN32)

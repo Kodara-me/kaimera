@@ -99,6 +99,24 @@ public:
         const QList<QImage>& references = {}, const QString& identityPrompt = {}, const ShotPrompts::Prefix& shot = {},
         bool translatePrompts = true);
     int queuedGenerationCount() const { return int(m_queued.size()); }
+    // Animation: image.animate with MP4 output and an installed animation model with all its
+    // files. Why the selected image cannot be animated, or empty when it can.
+    QString animateIssue() const;
+    // The service can make ping-pong loops (its pingPong parameter).
+    bool canPingPong() const;
+    // Animation models with no missing file, in service order.
+    QList<Nukleus::ModelInfo> animationModels() const;
+    // The video size for a start image: its aspect ratio at about the pixel area of the model's
+    // default width × height (480 × 832 without them), each side a multiple of 16.
+    static QSize animationSize(const QSize& start, const QJsonObject& modelOptions);
+    // Animations queue on the service like edits, under ticket, reporting their progress through
+    // queuedGenerationStatusChanged and their video through queuedAnimationFinished; a failure
+    // before submission arrives through queuedGenerationFinished. The prompt is translated first
+    // (holding the single-job guard), then sent with the start and end images (end may be null),
+    // the model, the MP4 container, the computed size and, when given, pingPong; nothing else,
+    // so that the model's defaults apply.
+    bool queueAnimation(const QUuid& ticket, const QImage& start, const QImage& end, const QString& prompt,
+        const QString& modelId, std::optional<bool> pingPong);
 
 signals:
     void generationModelsChanged();
@@ -111,6 +129,8 @@ signals:
     void generationFinished(const Nukleus::ImageJobResult &result);
     void queuedGenerationStatusChanged(const QUuid& ticket, const QString& message, int percentage);
     void queuedGenerationFinished(const QUuid& ticket, const Nukleus::ImageJobResult& result);
+    // A queued animation's video, or its failure; prompt is the English prompt it was sent with.
+    void queuedAnimationFinished(const QUuid& ticket, const Nukleus::AnimationResult& result, const QString& prompt);
 
 private:
     QString translatorId() const;
@@ -126,7 +146,9 @@ private:
     QString passStatus() const;
     // Reports the text pass's status to the queued generation it translates, or the active job.
     void emitPassStatus();
-    static QString progressMessage(const Nukleus::GenerationProgress& progress);
+    // video: the job makes a video, decoded and received as such.
+    static QString progressMessage(const Nukleus::GenerationProgress& progress, bool video = false);
+    bool submitQueuedAnimationNow(const QUuid& ticket, const Nukleus::AnimationRequest& request);
     bool submitQueuedNow(const QUuid& ticket, Nukleus::ImageGenerationRequest request,
         const QString& identityPrompt, const ShotPrompts::Prefix& shot);
     void failQueued(const QUuid& ticket, const QString& message,
@@ -165,8 +187,15 @@ private:
     // The queued generation whose prompts the text pass translates, if any.
     QUuid m_passTicket;
     // Service job ID → queued workspace generation and its last diagnostic output.
-    // Queued edits keep their source's size for the result.
-    struct QueuedGeneration { QUuid ticket; QString diagnostic; QSize outputSize; };
+    // Queued edits keep their source's size for the result; animations keep their English prompt.
+    struct QueuedGeneration
+    {
+        QUuid ticket;
+        QString diagnostic;
+        QSize outputSize;
+        bool animation = false;
+        QString prompt;
+    };
     QHash<QString, QueuedGeneration> m_queued;
     void handleState(Nukleus::ServiceConnectionState state, const QString &code, const QString &detail);
     Nukleus::ServiceClient *m_client;

@@ -1,6 +1,7 @@
 #include "CanvasServiceController.h"
 #include "IdentityPrompts.h"
 #include <algorithm>
+#include <cmath>
 #include <utility>
 #include <nukleus/ServiceProtocol.h>
 
@@ -160,7 +161,8 @@ CanvasServiceController::CanvasServiceController(QObject *parent)
             if (state == Nukleus::JobState::Queued)
                 message = position >= 0 ? tr("Queued (position %1)").arg(position) : tr("Queued…");
             else if (state == Nukleus::JobState::Running)
-                message = queued != m_queued.cend() ? tr("Generating…") : m_upscaling ? tr("Upscaling…")
+                message = queued != m_queued.cend() ? (queued->animation ? tr("Animating…") : tr("Generating…"))
+                    : m_upscaling ? tr("Upscaling…")
                     : m_planDone ? tr("Understanding your request…")
                     : m_textsDone ? passStatus() : tr("Generating…");
             else
@@ -176,7 +178,7 @@ CanvasServiceController::CanvasServiceController(QObject *parent)
         [this](const QString &jobId, const Nukleus::GenerationProgress &progress)
         {
             if (const auto queued = m_queued.constFind(jobId); queued != m_queued.cend()) {
-                emit queuedGenerationStatusChanged(queued->ticket, progressMessage(progress),
+                emit queuedGenerationStatusChanged(queued->ticket, progressMessage(progress, queued->animation),
                     qBound(0, progress.percentage, 100));
                 return;
             }
@@ -218,6 +220,18 @@ CanvasServiceController::CanvasServiceController(QObject *parent)
             m_generationJobId.clear();
             emit generationFinished(canvasResult);
             emit generationAvailabilityChanged();
+        });
+    // Animations only ever queue; a lost connection fails them here too.
+    connect(m_client, &Nukleus::ServiceClient::animationFinished, this,
+        [this](const Nukleus::AnimationResult& result) {
+            const auto queued = m_queued.constFind(result.jobId);
+            if (queued == m_queued.cend()) return;
+            const auto job = *queued;
+            m_queued.erase(queued);
+            auto canvasResult = result;
+            if (!result.succeeded && !job.diagnostic.isEmpty())
+                canvasResult.message += QLatin1Char('\n') + job.diagnostic;
+            emit queuedAnimationFinished(job.ticket, canvasResult, job.prompt);
         });
 }
 
@@ -472,9 +486,11 @@ void CanvasServiceController::emitPassStatus()
         emit queuedGenerationStatusChanged(m_passTicket, passStatus(), -1);
 }
 
-QString CanvasServiceController::progressMessage(const Nukleus::GenerationProgress& progress)
+QString CanvasServiceController::progressMessage(const Nukleus::GenerationProgress& progress, bool video)
 {
     using Stage = Nukleus::GenerationProgressStage;
+    if (video && progress.stage == Stage::Decoding) return tr("Decoding video…");
+    if (video && (progress.stage == Stage::Saving || progress.stage == Stage::Complete)) return tr("Receiving video…");
     switch (progress.stage)
     {
     case Stage::EnhancingPrompt: return tr("Preparing the prompt…");
@@ -613,7 +629,7 @@ bool CanvasServiceController::submitQueuedNow(const QUuid& ticket, Nukleus::Imag
         request.prompt = IdentityPrompts::appendClause(request.prompt, identityPrompt);
     const QString jobId = m_client->submitGeneration(request);
     if (jobId.isEmpty()) return false;
-    m_queued.insert(jobId, {ticket, {}, {}});
+    m_queued.insert(jobId, {ticket, {}, {}, false, {}});
     emit queuedGenerationStatusChanged(ticket, tr("Submitting…"), -1);
     return true;
 }
@@ -790,7 +806,81 @@ bool CanvasServiceController::submitQueuedEditNow(const QUuid& ticket, const Nuk
 {
     const QString jobId = m_client->submitEdit(request);
     if (jobId.isEmpty()) return false;
-    m_queued.insert(jobId, {ticket, {}, outputSize});
+    m_queued.insert(jobId, {ticket, {}, outputSize, false, {}});
+    emit queuedGenerationStatusChanged(ticket, tr("Submitting…"), -1);
+    return true;
+}
+
+QList<Nukleus::ModelInfo> CanvasServiceController::animationModels() const
+{
+    auto models = m_client->models(Nukleus::ModelCategory::Animation);
+    models.removeIf([](const auto& model) { return !model.missingFiles.isEmpty(); });
+    return models;
+}
+
+bool CanvasServiceController::canPingPong() const { return m_client->canPingPong(); }
+
+QString CanvasServiceController::animateIssue() const
+{
+    if (!m_client->isAuthenticated()) return tr("Connect to the service to animate images.");
+    if (!m_client->canAnimate()) return tr("The service cannot animate images — update Nukleus.");
+    if (!m_client->canAnimateMp4())
+        return tr("The service cannot make MP4 videos — install ffmpeg where Nukleus runs.");
+    if (animationModels().isEmpty())
+        return tr("No animation model with all its files is installed — install one in Nukleus Manager.");
+    return {};
+}
+
+QSize CanvasServiceController::animationSize(const QSize& start, const QJsonObject& modelOptions)
+{
+    if (start.isEmpty()) return {};
+    const double area = modelOptions.value("width").toDouble(480) * modelOptions.value("height").toDouble(832);
+    const double ratio = double(start.width()) / start.height();
+    const auto side = [](double length) { return qMax(16, int(std::lround(length / 16)) * 16); };
+    return {side(std::sqrt(area * ratio)), side(std::sqrt(area / ratio))};
+}
+
+bool CanvasServiceController::queueAnimation(const QUuid& ticket, const QImage& start, const QImage& end,
+    const QString& prompt, const QString& modelId, std::optional<bool> pingPong)
+{
+    if (ticket.isNull() || start.isNull() || prompt.trimmed().isEmpty() || !animateIssue().isEmpty()) return false;
+    const auto models = animationModels();
+    const auto model = std::find_if(models.cbegin(), models.cend(), [&](const auto& m) { return m.id == modelId; });
+    if (model == models.cend()) return false;
+    Nukleus::AnimationRequest request;
+    request.modelId = modelId;
+    request.prompt = prompt;
+    for (const auto& [image, bytes] : {std::pair{start, &request.startImage}, std::pair{end, &request.endImage}}) {
+        if (image.isNull()) continue;
+        QBuffer buffer(bytes);
+        if (!buffer.open(QIODevice::WriteOnly) || !image.save(&buffer, "PNG")) return false;
+    }
+    // Only these parameters: duration, steps and the rest come from the model's defaults.
+    const QSize size = animationSize(start.size(), model->recommendedOptions);
+    request.parameters = {{"container", "mp4"}, {"width", size.width()}, {"height", size.height()}};
+    if (pingPong) request.parameters.insert("pingPong", *pingPong);
+    if (const auto immediate = immediateTranslation({prompt})) {
+        request.prompt = immediate->first();
+        return submitQueuedAnimationNow(ticket, request);
+    }
+    // The translation holds the single-job guard; the animation then joins the service queue.
+    m_passTicket = ticket;
+    const bool started = translate({prompt}, [this, ticket, request](bool succeeded,
+                                                 const QStringList& english, const QString& message) mutable {
+        if (!succeeded) { failQueued(ticket, message); return; }
+        request.prompt = english.first();
+        if (!animateIssue().isEmpty() || !submitQueuedAnimationNow(ticket, request))
+            failQueued(ticket, tr("Could not submit the animation."));
+    });
+    if (!started) m_passTicket = {};
+    return started;
+}
+
+bool CanvasServiceController::submitQueuedAnimationNow(const QUuid& ticket, const Nukleus::AnimationRequest& request)
+{
+    const QString jobId = m_client->submitAnimation(request);
+    if (jobId.isEmpty()) return false;
+    m_queued.insert(jobId, {ticket, {}, {}, true, request.prompt});
     emit queuedGenerationStatusChanged(ticket, tr("Submitting…"), -1);
     return true;
 }

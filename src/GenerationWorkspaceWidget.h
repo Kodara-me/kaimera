@@ -6,6 +6,7 @@
 #include <nukleus/Identity.h>
 #include <nukleus/ImageTypes.h>
 #include <nukleus/ModelRouting.h>
+#include "AnimateForm.h"
 class EditBubble;
 class GenerationCard;
 class GenerationInspectorWidget;
@@ -42,6 +43,19 @@ public:
     void completePendingImage(const QUuid& id, const QImage& image, const QString& prompt = {},
         const QString& negativePrompt = {});
     void failPendingImage(const QUuid& id, const QString& message);
+    // Turns a queued animation's entry into an animation once its first frame is decoded, or into
+    // a failed entry when the job failed or the video cannot be read.
+    void completePendingAnimation(const QUuid& id, const Nukleus::AnimationResult& result, const QString& prompt);
+    // The selected animation entry, or null when none (a still image or nothing is selected).
+    QUuid currentAnimation() const { return m_currentAnimation; }
+    // Writes the selected animation's video bytes unchanged.
+    bool saveAnimation(const QString& path, QString* error = nullptr) const;
+    AnimateForm* animateForm() const { return m_animateForm; }
+    // Why the service cannot animate (empty when it can), the usable animation models and whether
+    // it makes ping-pong loops; Animate needs a selected still image besides.
+    void setAnimateAvailability(const QString& issue, const QList<AnimateForm::Model>& models, bool pingPong);
+    // Whether the Animate form can submit now, apart from its prompt (a single job blocks it).
+    void setAnimateSubmitAvailable(bool available, const QString& issue = {});
     // Shows a queued history image in Kira Sparkle's conversation, in the size's ratio; the
     // conversation then follows its progress.
     void showSparkleResult(const QUuid& id, const QSize& size);
@@ -77,6 +91,10 @@ signals:
         const QString& qualityId, bool translatePrompt);
     void upscaleRequested(const QImage& image);
     void sharpenRequested(const QImage& image);
+    // The Animate form's submission: the selected image, the end image (null without one) and,
+    // when the service makes ping-pong loops (sendPingPong), the Loop switch's state.
+    void animateRequested(const QImage& start, const QImage& end, const QString& prompt, const QString& modelId,
+        bool sendPingPong, bool pingPong);
     // Sparkles in the edit bubble asks to improve the current instruction.
     void editImproveRequested(const QString& instruction);
     // Kira Sparkle sends a request with its base image (null without one) and references.
@@ -107,7 +125,19 @@ private:
     // Loads a user-selected .kiraid with its decoded references; nothing when cancelled or unreadable.
     std::optional<Nukleus::IdentityPackage> chooseIdentity(QList<QImage>* images);
     void savePng(const QImage& image);
+    // Open, Save, Copy prompt and Delete for an animation entry.
+    void showAnimationMenu(const QUuid& id, const QPoint& globalPos);
+    void openVideoExternally(const QByteArray& video);
+    void saveVideo(const QByteArray& video);
+    void selectAnimation(const QUuid& id);
     void updateImageTools();
+    // The Animate toolbar button toggles the form over the selected still image.
+    void setAnimateOpen(bool open);
+    QToolButton* m_animateButton;
+    AnimateForm* m_animateForm;
+    bool m_animateOpen = false;
+    QString m_animateIssue;
+    QUuid m_currentAnimation;
     QList<QToolButton*> m_imageTools;
     QToolButton* m_fitButton;
     QToolButton* m_cropButton;

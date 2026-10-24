@@ -104,7 +104,7 @@ system locales, English otherwise.
   image selections and application restarts. Manual zoom/100% exits fit mode.
   The icon toolbar above the
   preview offers fit/actual-size toggle, zoom out/in, 100%, crop, Upscale 2×,
-  Downscale 2×, Improve sharpness, then a section with New identity and Edit with
+  Downscale 2×, Improve sharpness, Animate, then a section with New identity and Edit with
   an identity, and Save as. Improve
   sharpness edits the selected image with the default editing quality's model and
   fixed prompts for a light, natural sharpening pass (no quality prefixes, no LLM),
@@ -152,6 +152,26 @@ system locales, English otherwise.
   the edited image (at the source's resolution) replaces without being selected, so
   you can keep editing; a failed edit leaves a tile with the error. The source image
   is retained.
+- **Animate** (after Improve sharpness in the toolbar; **Animer** in French) turns the
+  selected image into a short video. It needs a selected still image, a Nukleus 0.3
+  service that offers `image.animate` with MP4 output (ffmpeg on the service) and an
+  animation model with all its files; otherwise it is disabled and its tooltip says what
+  is missing. It toggles a floating form over the bottom of the preview, in place of the
+  edit bubble (the New image card closes): describe the motion (Enter submits,
+  Shift+Enter adds a line, Escape closes and keeps the draft), and optionally attach one
+  end image with the paperclip for the video to move towards. **Loop** (shown when the
+  service can make ping-pong loops) plays the motion forward then backward for a
+  seamless loop; it starts at the model's default. With several usable animation models,
+  a selector picks one. Duration, steps and the rest come from the model's defaults set
+  in Nukleus Manager; the video keeps the image's aspect ratio at the model's default
+  pixel area. The description is translated into English first, like edit instructions.
+  A job takes minutes: it queues behind a progress tile in session history, and you can
+  keep working meanwhile. The finished animation's tile shows its first frame with a
+  play mark; selecting it plays the video in a loop in the preview (click to pause or
+  resume), with its size, frame count and frames per second in the badge. Image tools
+  (crop, upscale, downscale, sharpen, edit, animate) are disabled on an animation.
+  **Save as** writes the MP4 video exactly as received; right-click offers Open, Save,
+  Copy prompt and Delete. Animations stay in memory until saved.
 - **Kira Sparkle** is the ✨ bubble in the preview's lower-right corner. It opens a
   chat to its left that greets you with "How can I help you?": the conversation, a
   two-line request field (Enter sends, Shift+Enter adds a line; Escape, the bubble or

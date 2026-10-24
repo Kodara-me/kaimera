@@ -15,7 +15,10 @@ add_executable(canvas-test
     ../src/ServicePreferencesDialog.cpp
 )
 target_include_directories(canvas-test PRIVATE ../src ${CMAKE_BINARY_DIR}/src)
-target_link_libraries(canvas-test PRIVATE danbooru-dictionary Nukleus::SDK Ardoise::Widgets Qt6::Network Qt6::Test Qt6::Widgets)
+target_link_libraries(canvas-test PRIVATE danbooru-dictionary Nukleus::SDK Ardoise::Widgets Qt6::Multimedia Qt6::Network Qt6::Test Qt6::Widgets)
+# A six-frame 64 × 48 H.264 MP4 at 8 fps: three red frames, then three blue ones.
+target_compile_definitions(canvas-test PRIVATE
+    KAIMERA_TEST_ANIMATION="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/animation.mp4")
 add_test(NAME canvas-test COMMAND canvas-test)
 set_tests_properties(canvas-test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 

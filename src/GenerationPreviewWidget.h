@@ -3,6 +3,7 @@
 #include <QHash>
 #include <QImage>
 class QGraphicsPixmapItem;
+class QMediaPlayer;
 class QRubberBand;
 class GenerationPreviewWidget final : public QGraphicsView
 {
@@ -10,6 +11,13 @@ class GenerationPreviewWidget final : public QGraphicsView
 public:
     explicit GenerationPreviewWidget(QWidget* parent = nullptr);
     void setImage(const QImage& image);
+    // Plays a video in a loop at once, with the same zoom and fit as images; a click pauses or
+    // resumes it. The badge shows its size, frame count and frames per second.
+    void setAnimation(const QByteArray& video, const QSize& size, int frames, int fps);
+    bool hasAnimation() const { return m_player != nullptr; }
+    bool isPlaying() const;
+    // The frame shown last, or null.
+    QImage currentFrame() const { return m_frame; }
     void setOverlayVisible(bool visible);
     // Floating content over the viewport, in viewport coordinates, one rect per source.
     // The dimensions badge stays in the bottom-left corner and rises above them only
@@ -46,6 +54,13 @@ protected:
 private:
     void zoom(double factor);
     void updateOverlay();
+    void showFrame(const QImage& frame);
+    QMediaPlayer* m_player = nullptr;
+    QImage m_frame;
+    QSize m_animationSize;
+    int m_animationFrames = 0;
+    int m_animationFps = 0;
+    QPoint m_pressPosition;
     QRect cropPixels(const QPoint& point) const;
     QString m_overlayText;
     bool m_overlayVisible = true;

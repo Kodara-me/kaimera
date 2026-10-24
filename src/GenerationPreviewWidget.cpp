@@ -1,6 +1,12 @@
 #include "GenerationPreviewWidget.h"
 #include <Ardoise/Theme.h>
+#include <QApplication>
+#include <QBuffer>
 #include <QGraphicsPixmapItem>
+#include <QMediaPlayer>
+#include <QUrl>
+#include <QVideoFrame>
+#include <QVideoSink>
 #include <QGraphicsScene>
 #include <QResizeEvent>
 #include <QWheelEvent>
@@ -46,9 +52,65 @@ void GenerationPreviewWidget::setImage(const QImage& image)
     if (m_fit) fitImage(); else actualSize();
 }
 
+void GenerationPreviewWidget::setAnimation(const QByteArray& video, const QSize& size, int frames, int fps)
+{
+    clear();
+    if (video.isEmpty())
+        return;
+    m_animationSize = size;
+    m_animationFrames = frames;
+    m_animationFps = fps;
+    m_player = new QMediaPlayer(this);
+    auto* buffer = new QBuffer(m_player);
+    buffer->setData(video);
+    buffer->open(QIODevice::ReadOnly);
+    auto* sink = new QVideoSink(m_player);
+    m_player->setVideoSink(sink);
+    m_player->setLoops(QMediaPlayer::Infinite);
+    // Frames may arrive queued from the decoder: those of a video cleared meanwhile are dropped.
+    connect(sink, &QVideoSink::videoFrameChanged, this, [this, player = m_player](const QVideoFrame& frame) {
+        if (player == m_player && frame.isValid()) showFrame(frame.toImage());
+    });
+    m_player->setSourceDevice(buffer, QUrl(QStringLiteral("animation.mp4")));
+    m_player->play();
+    updateOverlay();
+}
+
+bool GenerationPreviewWidget::isPlaying() const
+{
+    return m_player && m_player->playbackState() == QMediaPlayer::PlayingState;
+}
+
+void GenerationPreviewWidget::showFrame(const QImage& frame)
+{
+    if (frame.isNull())
+        return;
+    m_frame = frame;
+    auto pixmap = QPixmap::fromImage(frame);
+    pixmap.setDevicePixelRatio(1);
+    if (m_item) {
+        m_item->setPixmap(pixmap);
+        return;
+    }
+    // The first frame places the video like an image, in the current view mode.
+    m_item = scene()->addPixmap(pixmap);
+    m_item->setTransformationMode(Qt::SmoothTransformation);
+    scene()->setSceneRect(m_item->boundingRect());
+    if (m_fit) fitImage(); else actualSize();
+}
+
 void GenerationPreviewWidget::clear()
 {
     setCropEnabled(false);
+    if (m_player) {
+        m_player->stop();
+        m_player->deleteLater();
+        m_player = nullptr;
+    }
+    m_frame = { };
+    m_animationSize = { };
+    m_animationFrames = 0;
+    m_animationFps = 0;
     scene()->clear();
     m_item = nullptr;
     m_image = { };
@@ -145,6 +207,7 @@ void GenerationPreviewWidget::setCropEnabled(bool enabled)
 
 void GenerationPreviewWidget::mousePressEvent(QMouseEvent* event)
 {
+    m_pressPosition = event->position().toPoint();
     if (m_cropEnabled && event->button() == Qt::LeftButton) {
         const QPointF point = mapToScene(event->position().toPoint());
         if (sceneRect().contains(point)) {
@@ -192,6 +255,11 @@ void GenerationPreviewWidget::mouseReleaseEvent(QMouseEvent* event)
         event->accept();
         return;
     }
+    // A click on a video pauses or resumes it; dragging still pans.
+    if (m_player && event->button() == Qt::LeftButton
+        && (event->position().toPoint() - m_pressPosition).manhattanLength() < QApplication::startDragDistance()) {
+        if (isPlaying()) m_player->pause(); else m_player->play();
+    }
     QGraphicsView::mouseReleaseEvent(event);
 }
 
@@ -213,6 +281,15 @@ QRect GenerationPreviewWidget::cropPixels(const QPoint& point) const
 
 void GenerationPreviewWidget::updateOverlay()
 {
+    if (m_player) {
+        const QSize size = m_animationSize.isValid() ? m_animationSize : m_frame.size();
+        m_overlayText = !m_overlayVisible ? QString() : tr("%1 × %2 px · %n frame(s) · %3 fps · %4%", nullptr,
+            m_animationFrames).arg(size.width()).arg(size.height()).arg(m_animationFps)
+            .arg(QLocale().toString(zoom() * 100, 'f', 1));
+        setAccessibleDescription(m_overlayText);
+        viewport()->update();
+        return;
+    }
     m_overlayText = !m_overlayVisible || m_image.isNull() ? QString() : tr("%1 × %2 px · %3%")
         .arg(m_image.width()).arg(m_image.height()).arg(QLocale().toString(zoom() * 100, 'f', 1));
     if (m_overlayVisible && m_cropping)

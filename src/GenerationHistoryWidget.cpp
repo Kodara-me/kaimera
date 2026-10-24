@@ -32,7 +32,10 @@ GenerationHistoryWidget::GenerationHistoryWidget(QWidget* parent)
         [this](const QUuid& id)
         {
             updateHistory();
-            emit imageSelected(m_model->image(id));
+            if (m_model->kind(id) == GenerationHistoryModel::Kind::Animation)
+                emit animationSelected(id);
+            else
+                emit imageSelected(m_model->image(id));
         });
     connect(m_view, &GenerationHistoryView::removeRequested, this, &GenerationHistoryWidget::removeImage);
     connect(m_previous, &QToolButton::clicked, this,

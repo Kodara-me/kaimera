@@ -9,6 +9,7 @@
 #include "JobActivityIndicator.h"
 #include "KiraSparkle.h"
 #include "QualityStepSlider.h"
+#include "VideoFrames.h"
 #include <nukleus/Identity.h>
 #include <QFile>
 #include <QSignalBlocker>
@@ -202,6 +203,11 @@ GenerationWorkspaceWidget::GenerationWorkspaceWidget(QWidget* parent)
     // Sharpens the selected image with the default editing model and fixed prompts.
     m_sharpenButton = tool(Ardoise::Icon::Sharpen, tr("Improve sharpness"), "imageSharpen");
     connect(m_sharpenButton, &QToolButton::clicked, this, [this] { emit sharpenRequested(m_current); });
+    // Toggles the Animate form over the selected still image.
+    m_animateButton = tool(Ardoise::Icon::Image, tr("Animate"), "imageAnimate");
+    m_animateButton->setIcon(AnimateForm::icon());
+    m_animateButton->setCheckable(true);
+    connect(m_animateButton, &QToolButton::toggled, this, &GenerationWorkspaceWidget::setAnimateOpen);
     separator();
     m_identityButton = alwaysEnabledTool(Ardoise::Icon::Person, tr("Create identity from a prompt…"), "imageCreateIdentity");
     m_identityButton->setCheckable(true);
@@ -279,6 +285,38 @@ GenerationWorkspaceWidget::GenerationWorkspaceWidget(QWidget* parent)
     connect(m_editBubble, &EditBubble::expandedChanged, this, [this](bool expanded) {
         if (expanded) m_sparkle->setExpanded(false);
     });
+    m_animateIssue = tr("Connect to the service to animate images.");
+    m_animateForm = new AnimateForm(m_preview);
+    connect(m_animateForm, &AnimateForm::coveredRectChanged, m_preview,
+        [this](const QRect& rect) { m_preview->setOverlayObstacle(rect, m_animateForm); });
+    connect(m_animateForm, &AnimateForm::closeRequested, this, [this] { setAnimateOpen(false); });
+    connect(m_animateForm, &AnimateForm::endImageRequested, this, [this] {
+        const auto path = QFileDialog::getOpenFileName(this, tr("Choose an End Image"), {}, imageFileFilter());
+        if (path.isEmpty()) return;
+        QImageReader reader(path);
+        reader.setAutoTransform(true);
+        const auto image = reader.read();
+        if (image.isNull())
+            QMessageBox::warning(this, tr("Could not add the end image"),
+                QStringLiteral("%1: %2").arg(QFileInfo(path).fileName(), reader.errorString()));
+        else
+            m_animateForm->setEndImage(image);
+    });
+    connect(m_animateForm, &AnimateForm::submitted, this, [this] {
+        if (m_current.isNull()) return;
+        const QString prompt = m_animateForm->prompt()->toPlainText();
+        const QImage end = m_animateForm->endImage();
+        const QString model = m_animateForm->modelId();
+        const bool sendPingPong = m_animateForm->pingPongAvailable();
+        const bool pingPong = m_animateForm->loop();
+        m_animateForm->clearDraft();
+        setAnimateOpen(false);
+        emit animateRequested(m_current, end, prompt, model, sendPingPong, pingPong);
+    });
+    // Kira Sparkle's panel and the Animate form share the bottom of the preview.
+    connect(m_sparkle, &KiraSparkle::expandedChanged, this, [this](bool expanded) {
+        if (expanded) setAnimateOpen(false);
+    });
     m_activity = new JobActivityIndicator(m_preview);
     m_editPrompt->installEventFilter(this);
     connect(m_editPrompt, &QPlainTextEdit::textChanged, this, [this] {
@@ -304,13 +342,90 @@ GenerationWorkspaceWidget::GenerationWorkspaceWidget(QWidget* parent)
         [this](const QImage& image)
         {
             m_current = image;
+            m_currentAnimation = {};
             updateEditButton();
             updateEditBubble();
             m_preview->setImage(image);
             updateImageTools();
             emit imageSelectionChanged(!image.isNull());
         });
+    connect(m_history, &GenerationHistoryWidget::animationSelected, this, &GenerationWorkspaceWidget::selectAnimation);
     updateImageTools();
+}
+
+void GenerationWorkspaceWidget::selectAnimation(const QUuid& id)
+{
+    // An animation plays in the preview; it is not an image to edit, crop or animate again.
+    m_current = {};
+    m_currentAnimation = id;
+    updateEditButton();
+    updateEditBubble();
+    const auto animation = m_history->model()->animation(id);
+    m_preview->setAnimation(animation.video, animation.size, animation.frames, animation.fps);
+    updateImageTools();
+    emit imageSelectionChanged(true);
+}
+
+void GenerationWorkspaceWidget::completePendingAnimation(const QUuid& id, const Nukleus::AnimationResult& result,
+    const QString& prompt)
+{
+    if (!result.succeeded) {
+        failPendingImage(id, result.message);
+        return;
+    }
+    // The thumbnail shows the first frame, decoded before the entry is ready.
+    VideoFrames::readFirstFrame(result.videoData, this, [this, id, result, prompt](const QImage& frame) {
+        if (frame.isNull()) {
+            failPendingImage(id, tr("The service returned an unreadable video."));
+            return;
+        }
+        m_history->model()->completeAnimation(id,
+            {result.videoData, result.mimeType, result.frames, result.fps, frame.size()}, frame, prompt);
+    });
+}
+
+bool GenerationWorkspaceWidget::saveAnimation(const QString& path, QString* error) const
+{
+    const QByteArray video = m_history->model()->animation(m_currentAnimation).video;
+    if (video.isEmpty()) {
+        if (error) *error = tr("No animation selected.");
+        return false;
+    }
+    QSaveFile file(path);
+    if (!file.open(QIODevice::WriteOnly) || file.write(video) != video.size() || !file.commit()) {
+        if (error) *error = file.errorString();
+        return false;
+    }
+    return true;
+}
+
+void GenerationWorkspaceWidget::setAnimateAvailability(const QString& issue, const QList<AnimateForm::Model>& models,
+    bool pingPong)
+{
+    m_animateIssue = issue;
+    m_animateForm->setModels(models);
+    m_animateForm->setPingPongAvailable(pingPong);
+    updateImageTools();
+}
+
+void GenerationWorkspaceWidget::setAnimateSubmitAvailable(bool available, const QString& issue)
+{
+    m_animateForm->setSubmitAvailable(available, issue);
+}
+
+void GenerationWorkspaceWidget::setAnimateOpen(bool open)
+{
+    m_animateOpen = open && m_animateButton->isEnabled();
+    {
+        const QSignalBlocker blocker(m_animateButton);
+        m_animateButton->setChecked(m_animateOpen);
+    }
+    // The Animate form, the edit bubble and the New image card never coexist.
+    if (m_animateOpen) {
+        setGenerationOpen(false);
+        m_sparkle->setExpanded(false);
+    }
+    updateEditBubble();
 }
 
 void GenerationWorkspaceWidget::appendImage(const QImage& image, const QString& label, const QString& prompt,
@@ -499,6 +614,7 @@ void GenerationWorkspaceWidget::clearSelection()
 {
     m_history->clearSelection();
     m_current = { };
+    m_currentAnimation = { };
     updateEditButton();
     updateEditBubble();
     m_preview->clear();
@@ -542,6 +658,13 @@ bool GenerationWorkspaceWidget::eventFilter(QObject* watched, QEvent* event)
                 QGuiApplication::clipboard()->setText(index.data(GenerationHistoryModel::StatusRole).toString());
             else if (chosen == remove)
                 m_history->removeImage(id);
+            return true;
+        }
+        if (m_history->model()->kind(id) == GenerationHistoryModel::Kind::Animation) {
+            if (!context)
+                openVideoExternally(m_history->model()->animation(id).video);
+            else
+                showAnimationMenu(id, static_cast<QContextMenuEvent*>(event)->globalPos());
             return true;
         }
         if (image.isNull())
@@ -602,6 +725,56 @@ void GenerationWorkspaceWidget::showImageMenu(const QUuid& id, const QImage& ima
         addReferences(m_sparkle->referenceStrip(), {image}, {}, true);
     else if (remove && chosen == remove)
         m_history->removeImage(id);
+}
+
+void GenerationWorkspaceWidget::showAnimationMenu(const QUuid& id, const QPoint& globalPos)
+{
+    QMenu menu(this);
+    auto* open = menu.addAction(tr("Open"));
+    auto* save = menu.addAction(tr("Save"));
+    const QString prompt = m_history->model()->prompt(id);
+    QAction* copyPrompt = nullptr;
+    if (!prompt.isEmpty()) {
+        copyPrompt = menu.addAction(tr("Copy prompt"));
+        copyPrompt->setObjectName(QStringLiteral("copyPromptAction"));
+    }
+    auto* remove = menu.addAction(tr("Delete"));
+    const QByteArray video = m_history->model()->animation(id).video;
+    const auto* chosen = menu.exec(globalPos);
+    if (chosen == open)
+        openVideoExternally(video);
+    else if (chosen == save)
+        saveVideo(video);
+    else if (copyPrompt && chosen == copyPrompt)
+        QGuiApplication::clipboard()->setText(prompt);
+    else if (chosen == remove)
+        m_history->removeImage(id);
+}
+
+void GenerationWorkspaceWidget::openVideoExternally(const QByteArray& video)
+{
+    const QString path = m_externalImages.filePath(QUuid::createUuid().toString(QUuid::WithoutBraces) + ".mp4");
+    bool written = false;
+    if (m_externalImages.isValid()) {
+        QFile file(path);
+        written = file.open(QIODevice::WriteOnly) && file.write(video) == video.size();
+    }
+    if (!written || !QDesktopServices::openUrl(QUrl::fromLocalFile(path)))
+        QMessageBox::warning(this, tr("Could not open video"), tr("Could not open the video in the default video player."));
+}
+
+void GenerationWorkspaceWidget::saveVideo(const QByteArray& video)
+{
+    QFileDialog dialog(this, tr("Save Animation"));
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDirectory(OutputSettingsWidget::preferredDirectory());
+    dialog.setNameFilter(tr("MP4 video (*.mp4)"));
+    dialog.setDefaultSuffix("mp4");
+    if (dialog.exec() != QDialog::Accepted || dialog.selectedFiles().isEmpty())
+        return;
+    QSaveFile file(dialog.selectedFiles().first());
+    if (!file.open(QIODevice::WriteOnly) || file.write(video) != video.size() || !file.commit())
+        QMessageBox::warning(this, tr("Could not save animation"), file.errorString());
 }
 
 void GenerationWorkspaceWidget::openExternally(const QImage& image)
@@ -719,7 +892,10 @@ void GenerationWorkspaceWidget::updateEditBubble()
     // The identity panel covers the preview, so both step aside while it is open.
     const bool identityOpen = m_identityPanel && m_identityPanel->isOpen();
     const bool generationOpen = m_generationCard && m_generationOpen;
-    m_editBubble->setActive(m_editOffered && !m_current.isNull() && !identityOpen && !generationOpen);
+    // The Animate form takes the edit bubble's place while it is open.
+    const bool animateOpen = m_animateOpen && !m_current.isNull();
+    m_editBubble->setActive(m_editOffered && !m_current.isNull() && !identityOpen && !generationOpen && !animateOpen);
+    m_animateForm->setActive(animateOpen && !identityOpen && !generationOpen);
     m_sparkle->setActive(!identityOpen);
     if (m_generationCard)
         m_generationCard->setActive(generationOpen && !identityOpen);
@@ -735,6 +911,11 @@ void GenerationWorkspaceWidget::setGenerationOpen(bool open)
     // Opening the card puts the identity panel away so the card is not hidden behind it.
     if (open && m_identityPanel)
         m_identityPanel->setOpen(false);
+    if (open && m_animateOpen) {
+        m_animateOpen = false;
+        const QSignalBlocker blocker(m_animateButton);
+        m_animateButton->setChecked(false);
+    }
     updateEditBubble();
 }
 
@@ -852,7 +1033,15 @@ void GenerationWorkspaceWidget::setSharpenEnabled(bool enabled)
 
 void GenerationWorkspaceWidget::updateImageTools()
 {
-    for (auto* button : m_imageTools) button->setEnabled(!m_current.isNull());
+    // An animation can be viewed, zoomed and saved; the tools that need a still image stay disabled.
+    const bool still = !m_current.isNull();
+    for (auto* button : m_imageTools) button->setEnabled(still || !m_currentAnimation.isNull());
+    m_cropButton->setEnabled(still);
+    const bool animate = still && m_animateIssue.isEmpty();
+    m_animateButton->setEnabled(animate);
+    m_animateButton->setToolTip(animate ? tr("Animate")
+        : still ? m_animateIssue : tr("Select a still image to animate it."));
+    if (!animate && m_animateOpen) setAnimateOpen(false);
     m_sparkle->setContextAvailable(!m_current.isNull());
     m_upscaleButton->setEnabled(!m_current.isNull() && m_upscaleAvailable && m_upscaleEnabled);
     m_downscaleButton->setEnabled(m_current.width() >= 2 && m_current.height() >= 2);

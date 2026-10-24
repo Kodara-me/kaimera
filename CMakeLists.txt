@@ -8,7 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Network WebSockets Widgets)
+# Qt Multimedia plays and decodes the MP4 animations the service returns.
+find_package(Qt6 6.5 REQUIRED COMPONENTS Multimedia Network WebSockets Widgets)
 
 set(NUKLEUS_SOURCE_DIR "" CACHE PATH "Path to a Nukleus source checkout")
 if(NOT NUKLEUS_SOURCE_DIR)
@@ -22,9 +23,9 @@ else()
     # Without a sibling checkout: an installed NukleusSdk package, otherwise the pinned tag's SDK.
     FetchContent_Declare(NukleusSdk
         GIT_REPOSITORY https://github.com/jstmichel/nukleus.git
-        GIT_TAG v0.1.0
+        GIT_TAG v0.3.0
         SOURCE_SUBDIR src/sdk
-        FIND_PACKAGE_ARGS 0.1 CONFIG)
+        FIND_PACKAGE_ARGS 0.3 CONFIG)
     FetchContent_MakeAvailable(NukleusSdk)
 endif()
 

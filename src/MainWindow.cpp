@@ -157,6 +157,14 @@ MainWindow::MainWindow(QWidget* parent)
         m_workspace->setRoutingLocked(m_serviceClient->jobActive());
         const QString sparkleIssue = m_serviceClient->planIssue();
         m_workspace->sparkle()->setSendEnabled(sparkleIssue.isEmpty(), sparkleIssue);
+        QList<AnimateForm::Model> animationModels;
+        for (const auto& model : m_serviceClient->animationModels())
+            animationModels.append({model.id, model.displayLabel(), model.recommendedOptions.value("pingPong").toBool()});
+        m_workspace->setAnimateAvailability(m_serviceClient->animateIssue(), animationModels,
+            m_serviceClient->canPingPong());
+        // The prompt's translation is a single job: another one running holds it back.
+        m_workspace->setAnimateSubmitAvailable(!m_serviceClient->jobActive(),
+            m_serviceClient->jobActive() ? tr("Wait for the current job to finish.") : QString());
     };
     connect(m_serviceClient, &CanvasServiceController::generationAvailabilityChanged, this, updateGenerationAvailability);
     connect(m_panel, &GenerationInspectorWidget::draftChanged, this, updateGenerationAvailability);
@@ -404,6 +412,18 @@ MainWindow::MainWindow(QWidget* parent)
         });
     connect(m_workspace, &GenerationWorkspaceWidget::editRequested, this,
         queueEdit);
+    // Animations queue like edits: a progress tile that the animation replaces without selecting it.
+    connect(m_workspace, &GenerationWorkspaceWidget::animateRequested, this,
+        [this](const QImage& start, const QImage& end, const QString& prompt, const QString& modelId,
+            bool sendPingPong, bool pingPong) {
+            const QUuid ticket = QUuid::createUuid();
+            m_workspace->addPendingImage(ticket, tr("Animation"), tr("Submitting…"));
+            if (!m_serviceClient->queueAnimation(ticket, start, end, prompt, modelId,
+                    sendPingPong ? std::optional<bool>(pingPong) : std::nullopt))
+                m_workspace->removeImage(ticket);
+        });
+    connect(m_serviceClient, &CanvasServiceController::queuedAnimationFinished, m_workspace,
+        &GenerationWorkspaceWidget::completePendingAnimation);
     connect(m_serviceClient, &CanvasServiceController::generationStatusChanged, this,
         [this](const QString& message, int percentage)
         {
@@ -609,6 +629,20 @@ void MainWindow::openImage()
 
 void MainWindow::saveImage()
 {
+    // An animation is saved as the MP4 video the service returned, unchanged.
+    if (!m_workspace->currentAnimation().isNull()) {
+        QFileDialog dialog(this, tr("Save Animation"));
+        dialog.setAcceptMode(QFileDialog::AcceptSave);
+        dialog.setDirectory(OutputSettingsWidget::preferredDirectory());
+        dialog.setNameFilters({tr("MP4 video (*.mp4)")});
+        dialog.setDefaultSuffix(QStringLiteral("mp4"));
+        if (dialog.exec() != QDialog::Accepted || dialog.selectedFiles().isEmpty())
+            return;
+        QString error;
+        if (!m_workspace->saveAnimation(dialog.selectedFiles().first(), &error))
+            showMessage(tr("Could not save animation"), error);
+        return;
+    }
     const auto format = OutputSettingsWidget::preferredFormat();
     if (format.isEmpty())
         return;

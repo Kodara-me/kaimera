@@ -51,12 +51,13 @@ overrides, unavailable mappings, upgrade behavior and edit uploads/history.
 - CMake 3.24 or newer
 - Ninja
 - A C++20-capable compiler
-- Qt 6.5 or newer Widgets, SVG, Network, WebSockets, and LinguistTools development files
+- Qt 6.5 or newer Widgets, SVG, Network, WebSockets, Multimedia, and LinguistTools development
+  files, with Qt Multimedia's FFmpeg backend, which plays and decodes the MP4 animations
 - Qt Test development files when `BUILD_TESTING` is enabled (the default)
 - Ardoise 0.1, from an installed package or cloned by CMake at tag `v0.1.0`
 - LibArchive development files for the SDK's compressed `.kiraid` identity format
 
-On Debian/Ubuntu, install `build-essential cmake ninja-build qt6-base-dev qt6-svg-dev qt6-websockets-dev qt6-tools-dev qt6-tools-dev-tools libarchive-dev`. On Fedora use `gcc-c++ cmake ninja-build qt6-qtbase-devel qt6-qtsvg-devel qt6-qtwebsockets-devel qt6-qttools-devel libarchive-devel`; on Arch use `base-devel cmake ninja qt6-base qt6-svg qt6-websockets qt6-tools libarchive`. On macOS also install `brew install libarchive`.
+On Debian/Ubuntu, install `build-essential cmake ninja-build qt6-base-dev qt6-svg-dev qt6-websockets-dev qt6-multimedia-dev qt6-tools-dev qt6-tools-dev-tools libarchive-dev`. On Fedora use `gcc-c++ cmake ninja-build qt6-qtbase-devel qt6-qtsvg-devel qt6-qtwebsockets-devel qt6-qtmultimedia-devel qt6-qttools-devel libarchive-devel` (H.264 decoding needs the full FFmpeg from RPM Fusion); on Arch use `base-devel cmake ninja qt6-base qt6-svg qt6-websockets qt6-multimedia qt6-multimedia-ffmpeg qt6-tools libarchive`. On macOS also install `brew install qtmultimedia libarchive`.
 
 ## Build and test
 
@@ -79,7 +80,7 @@ to see startup errors. A `dyld: Symbol not found` error referencing
 `QObjectPrivate` and different Qt versions indicates mismatched Qt modules;
 the application can build successfully but abort before `main()`.
 
-For Homebrew installations, check `brew list --versions qtbase qtwebsockets qtsvg qttools`
+For Homebrew installations, check `brew list --versions qtbase qtwebsockets qtsvg qtmultimedia qttools`
 and upgrade outdated modules to match Qt Base (for example, `brew upgrade qtwebsockets`).
 Then rerun CMake configuration, build, and tests using the commands above.
 
@@ -110,9 +111,10 @@ Kaimera uses the sibling `../nukleus` checkout by default. To use another checko
 cmake -S . -B build -G Ninja -DNUKLEUS_SOURCE_DIR=/path/to/nukleus
 ```
 
-Without a valid checkout, CMake uses an installed `NukleusSdk` 0.1 package when
+Without a valid checkout, CMake uses an installed `NukleusSdk` 0.3 package when
 found (add its prefix with `-DCMAKE_PREFIX_PATH=/path/to/nukleus-install`), otherwise
-it clones the SDK of Nukleus tag `v0.1.0`; CI and releases build that way. Set
+it clones the SDK of Nukleus tag `v0.3.0`, the first with `image.animate` and its MP4
+output; CI and releases build that way. Set
 `-DNUKLEUS_SOURCE_DIR` to a path without `src/sdk` to skip the sibling checkout.
 Every mode provides `Nukleus::SDK`; Kaimera never builds the daemon or manager.
 

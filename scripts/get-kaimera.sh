@@ -11,7 +11,8 @@
 #   --dry-run        download and check, then print the build commands without running them
 #
 # Requires curl, tar, git, CMake 3.24+, a C++20 compiler, Qt 6.5+ with Widgets, Network,
-# WebSockets, SVG and LinguistTools, and LibArchive. Installed Ardoise and Nukleus SDK
+# WebSockets, SVG, Multimedia (with its FFmpeg backend) and LinguistTools, and LibArchive.
+# Installed Ardoise and Nukleus SDK
 # packages are used when found, otherwise CMake clones their pinned tags. The release is
 # installed only after its tests pass. Exit codes: 0 installed or already installed, 1 failure.
 

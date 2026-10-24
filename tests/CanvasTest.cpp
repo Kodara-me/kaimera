@@ -1,3 +1,4 @@
+#include "AnimateForm.h"
 #include "CanvasServiceController.h"
 #include "LocalStyles.h"
 #include <QListWidget>
@@ -4558,6 +4559,400 @@ private slots:
             }
         }
     }
+    void animationSizeFollowsStartImage_R8()
+    {
+        const auto size = &CanvasServiceController::animationSize;
+        // Without model defaults: about 480 × 832 pixels, in the start image's ratio, multiples of 16.
+        QCOMPARE(size({512, 768}, {}), QSize(512, 768));
+        QCOMPARE(size({1216, 832}, {}), QSize(768, 528));
+        QCOMPARE(size({1024, 1024}, {}), QSize(624, 624));
+        // The model's default width × height sets the area; the start image still sets the ratio.
+        const QJsonObject square{{"width", 640}, {"height", 640}};
+        QCOMPARE(size({512, 768}, square), QSize(528, 784));
+        QCOMPARE(size({1216, 832}, square), QSize(768, 528));
+        QCOMPARE(size({300, 300}, square), QSize(640, 640));
+        for (const QSize start : {QSize(512, 768), QSize(1216, 832), QSize(7, 3000)}) {
+            const QSize video = size(start, {});
+            QVERIFY(video.width() % 16 == 0 && video.height() % 16 == 0);
+            QVERIFY(video.width() >= 16 && video.height() >= 16);
+        }
+    }
+
+    void animateFormFollowsSelectionAndService_R1_R2_R3_R4_R5_R6_R15()
+    {
+        GenerationWorkspaceWidget workspace;
+        workspace.resize(900, 700);
+        workspace.show();
+        auto* animate = workspace.findChild<QToolButton*>("imageAnimate");
+        auto* form = workspace.findChild<AnimateForm*>();
+        auto* bubble = workspace.findChild<EditBubble*>();
+        QVERIFY(animate && form && bubble);
+        QCOMPARE(animate->accessibleName(), QString("Animate"));
+        // R1: no selection, then a service that cannot animate, then everything needed.
+        QVERIFY(!animate->isEnabled());
+        QCOMPARE(animate->toolTip(), QString("Select a still image to animate it."));
+        const QString issue = "The service cannot animate images — update Nukleus.";
+        workspace.setAnimateAvailability(issue, {}, false);
+        Nukleus::ModelInfo editor;
+        editor.id = "image-generation:edit";
+        editor.category = Nukleus::ModelCategory::ImageGeneration;
+        workspace.setDefaultModels({editor}, editor.id, {});
+        QImage source(64, 96, QImage::Format_RGB32);
+        source.fill(Qt::darkGreen);
+        workspace.appendImage(source, "Source");
+        QVERIFY(!animate->isEnabled());
+        QCOMPARE(animate->toolTip(), issue);
+        const AnimateForm::Model wan{"animation:wan", "Wan 2.2", true};
+        const AnimateForm::Model still{"animation:still", "Still", false};
+        workspace.setAnimateAvailability({}, {wan}, false);
+        QVERIFY(animate->isEnabled());
+        QCOMPARE(animate->toolTip(), QString("Animate"));
+        QTRY_VERIFY(bubble->isActive());
+        // R2: the form replaces the edit bubble over the preview, for the selected image.
+        animate->click();
+        QVERIFY(animate->isChecked() && form->isActive());
+        QVERIFY(!bubble->isActive());
+        QCOMPARE(form->parentWidget(), workspace.preview());
+        QTRY_VERIFY(form->isVisible() && workspace.preview()->rect().contains(form->geometry()));
+        // Only a prompt, a paperclip and Animate: no identity, quality or other generation option.
+        QVERIFY(form->prompt()->isVisible() && form->attachButton()->isVisible() && form->submitButton()->isVisible());
+        QVERIFY(!form->findChild<QualityStepSlider*>());
+        QVERIFY(!form->findChild<QSpinBox*>() && !form->findChild<QDoubleSpinBox*>());
+        QCOMPARE(form->findChildren<QToolButton*>().size(), 2); // The paperclip and the close button.
+        QCOMPARE(form->findChildren<QCheckBox*>().size(), 1);
+        QCOMPARE(form->findChildren<QComboBox*>().size(), 1);
+        // R4, R5: one model and no ping-pong: neither the Loop switch nor the model selector.
+        QVERIFY(form->loopSwitch()->isHidden());
+        QVERIFY(form->modelSelector()->isHidden());
+        QCOMPARE(form->modelId(), wan.id);
+        // R3: one end image at most; removing it allows another.
+        QImage end(32, 48, QImage::Format_RGB32);
+        end.fill(Qt::yellow);
+        QVERIFY(form->attachButton()->isEnabled());
+        QVERIFY(form->setEndImage(end));
+        QVERIFY(!form->attachButton()->isEnabled());
+        QVERIFY(!form->setEndImage(source));
+        QCOMPARE(form->endImage(), end);
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        auto removes = form->findChildren<QToolButton*>("animateRemoveEndImage");
+        QCOMPARE(removes.size(), 1);
+        removes.first()->click();
+        QVERIFY(form->endImage().isNull());
+        QVERIFY(form->attachButton()->isEnabled());
+        QVERIFY(form->setEndImage(end));
+        // R4, R5: ping-pong shows the Loop switch at the model's default; two models show the selector.
+        workspace.setAnimateAvailability({}, {wan, still}, true);
+        QVERIFY(!form->loopSwitch()->isHidden());
+        QVERIFY(form->loopSwitch()->isChecked());
+        QVERIFY(!form->modelSelector()->isHidden());
+        QCOMPARE(form->modelSelector()->count(), 2);
+        form->modelSelector()->setCurrentIndex(1);
+        QCOMPARE(form->modelId(), still.id);
+        QVERIFY(!form->loopSwitch()->isChecked());
+        form->loopSwitch()->setChecked(true);
+        // R6: Animate needs a prompt; Enter submits only then, and Shift+Enter adds a line.
+        workspace.setAnimateSubmitAvailable(true);
+        QSignalSpy requests(&workspace, &GenerationWorkspaceWidget::animateRequested);
+        auto* prompt = form->prompt();
+        prompt->setFocus();
+        prompt->setPlainText("   ");
+        QVERIFY(!form->submitButton()->isEnabled());
+        QTest::keyClick(prompt, Qt::Key_Return);
+        QCOMPARE(requests.count(), 0);
+        QCOMPARE(prompt->toPlainText(), QString("   "));
+        prompt->setPlainText("She breathes slowly");
+        prompt->moveCursor(QTextCursor::End);
+        QTest::keyClick(prompt, Qt::Key_Return, Qt::ShiftModifier);
+        QTest::keyClicks(prompt, "and blinks");
+        QCOMPARE(prompt->toPlainText(), QString("She breathes slowly\nand blinks"));
+        QCOMPARE(requests.count(), 0);
+        // A running single job holds Animate back, with a reason.
+        workspace.setAnimateSubmitAvailable(false, "Wait for the current job to finish.");
+        QVERIFY(!form->submitButton()->isEnabled());
+        QCOMPARE(form->submitButton()->toolTip(), QString("Wait for the current job to finish."));
+        QTest::keyClick(prompt, Qt::Key_Enter, Qt::KeypadModifier);
+        QCOMPARE(requests.count(), 0);
+        workspace.setAnimateSubmitAvailable(true);
+        QVERIFY(form->submitButton()->isEnabled());
+        QTest::keyClick(prompt, Qt::Key_Enter, Qt::KeypadModifier);
+        QCOMPARE(requests.count(), 1);
+        const auto request = requests.takeFirst();
+        QCOMPARE(request.at(0).value<QImage>(), source);
+        QCOMPARE(request.at(1).value<QImage>(), end);
+        QCOMPARE(request.at(2).toString(), QString("She breathes slowly\nand blinks"));
+        QCOMPARE(request.at(3).toString(), still.id);
+        QCOMPARE(request.at(4).toBool(), true);
+        QCOMPARE(request.at(5).toBool(), true);
+        // R7: the form closes and clears its prompt and end image.
+        QVERIFY(!animate->isChecked() && !form->isActive());
+        QVERIFY(prompt->toPlainText().isEmpty());
+        QVERIFY(form->endImage().isNull());
+        QTRY_VERIFY(bubble->isActive());
+        // Escape closes the form and keeps the draft; without ping-pong, no pingPong is sent.
+        workspace.setAnimateAvailability({}, {wan}, false);
+        animate->click();
+        prompt->setFocus();
+        prompt->setPlainText("A slow wave");
+        QTest::keyClick(prompt, Qt::Key_Escape);
+        QVERIFY(!animate->isChecked() && !form->isActive());
+        animate->click();
+        QCOMPARE(prompt->toPlainText(), QString("A slow wave"));
+        form->submitButton()->click();
+        QCOMPARE(requests.count(), 1);
+        QCOMPARE(requests.first().at(3).toString(), wan.id);
+        QCOMPARE(requests.first().at(4).toBool(), false);
+        // Losing the still image closes the form.
+        animate->click();
+        QVERIFY(form->isActive());
+        workspace.clearSelection();
+        QVERIFY(!animate->isEnabled() && !animate->isChecked() && !form->isActive());
+        // R15: the button reads "Animer" in French.
+        QTranslator french;
+        QVERIFY(french.load(QStringLiteral(":/translations/kaimera_fr.qm")));
+        qApp->installTranslator(&french);
+        {
+            GenerationWorkspaceWidget translated;
+            QCOMPARE(translated.findChild<QToolButton*>("imageAnimate")->accessibleName(), QString("Animer"));
+            QCOMPARE(translated.findChild<QPushButton*>("animateButton")->text(), QString("Animer"));
+        }
+        qApp->removeTranslator(&french);
+    }
+
+    void animatesSelectedImageThroughService_R1_R7_R8_R9_R10_R11_R12_R13()
+    {
+        QFile fixture(QStringLiteral(KAIMERA_TEST_ANIMATION));
+        QVERIFY(fixture.open(QIODevice::ReadOnly));
+        const QByteArray video = fixture.readAll();
+        QWebSocketServer server("animation-test", QWebSocketServer::NonSecureMode);
+        QVERIFY(server.listen(QHostAddress::LocalHost));
+        QWebSocket* peer = nullptr;
+        QList<QJsonObject> submissions;
+        QHash<QString, QList<QByteArray>> uploads;
+        QStringList operations{"image.edit", "model-routing", "prompt.enhance"};
+        auto routing = Nukleus::Protocol::starterModelRouting();
+        for (auto& quality : routing.editingQualities) quality.model.modelId = "image-model";
+        const QJsonObject ready{{"id", "animation:wan"}, {"displayName", "Wan 2.2"},
+            {"recommendedOptions", QJsonObject{{"vaeModelId", "vae"}, {"textEncoderModelId", "t5"},
+                {"width", 640}, {"height", 640}, {"pingPong", true}, {"steps", 4}}}};
+        const QJsonObject broken{{"id", "animation:broken"}, {"displayName", "Broken"},
+            {"missingFiles", QJsonArray{"vae"}}};
+        QJsonArray animationModels{broken};
+        const auto send = [&](const QJsonObject& message) {
+            peer->sendTextMessage(QString::fromUtf8(QJsonDocument(message).toJson()));
+        };
+        const auto sendCapabilities = [&] {
+            send({{"type", "capabilities"}, {"state", "ready"}, {"operations", QJsonArray::fromStringList(operations)}});
+        };
+        const auto sendModels = [&] {
+            send({{"type", "models.list.result"}, {"categories", QJsonArray{
+                QJsonObject{{"category", "image-generation"},
+                    {"models", QJsonArray{QJsonObject{{"id", "image-model"}, {"displayName", "Image"}}}}},
+                QJsonObject{{"category", "llm-chat"}, {"models", QJsonArray{QJsonObject{{"id", "llm-chat:translator"},
+                    {"displayName", "Translator"}, {"recommendedOptions", QJsonObject{{"defaultPromptTranslator", true}}}}}}},
+                QJsonObject{{"category", "animation"}, {"models", animationModels}}}}});
+        };
+        connect(&server, &QWebSocketServer::newConnection, this, [&] {
+            peer = server.nextPendingConnection();
+            connect(peer, &QWebSocket::textMessageReceived, this, [&](const QString& text) {
+                const auto request = QJsonDocument::fromJson(text.toUtf8()).object();
+                if (request.value("type") == "authenticate") {
+                    send({{"type", "authenticated"}});
+                    sendCapabilities();
+                    send({{"type", "model-routing.get.completed"}, {"routing", Nukleus::Protocol::modelRoutingToJson(routing)}});
+                }
+                if (request.value("type") == "models.list") sendModels();
+                if (request.value("type") != "submit") return;
+                submissions.append(request);
+                if (request.value("operation") == "image.animate")
+                    send({{"type", "upload-required"}, {"jobId", request.value("jobId")}, {"inputIndex", 0}});
+            });
+            // The service asks for the start image, then for the end image when there is one.
+            connect(peer, &QWebSocket::binaryMessageReceived, this, [&](const QByteArray& bytes) {
+                const auto& job = submissions.last();
+                auto& images = uploads[job.value("jobId").toString()];
+                images.append(bytes);
+                if (images.size() == 1 && job.value("options").toObject().value("hasEndImage").toBool())
+                    send({{"type", "upload-required"}, {"jobId", job.value("jobId")}, {"inputIndex", 1}});
+            });
+        });
+        MainWindow window;
+        window.resize(1300, 800);
+        window.show();
+        auto* client = window.findChild<CanvasServiceController*>();
+        auto* workspace = window.findChild<GenerationWorkspaceWidget*>();
+        auto* history = window.findChild<GenerationHistoryView*>();
+        auto* model = workspace->findChild<GenerationHistoryWidget*>()->model();
+        auto* animate = window.findChild<QToolButton*>("imageAnimate");
+        auto* newImage = window.findChild<QToolButton*>("imageNew");
+        auto* form = workspace->animateForm();
+        auto* card = window.findChild<GenerationCard*>();
+        QVERIFY(animate && newImage && form && card);
+        client->setConfiguration(QUrl(QString("ws://127.0.0.1:%1").arg(server.serverPort())), {}, false);
+        client->connectToService();
+        QTRY_VERIFY(client->canEdit());
+        QImage start(96, 160, QImage::Format_RGB32);
+        start.fill(Qt::darkGreen);
+        workspace->appendImage(start, "Start");
+        // R1: each missing piece disables Animate with its reason.
+        QTRY_COMPARE(animate->toolTip(), QString("The service cannot animate images — update Nukleus."));
+        QVERIFY(!animate->isEnabled());
+        operations << "image.animate";
+        sendCapabilities();
+        QTRY_COMPARE(animate->toolTip(), QString("The service cannot make MP4 videos — install ffmpeg where Nukleus runs."));
+        operations << "image.animate.mp4" << "image.animate.pingPong";
+        sendCapabilities();
+        QTRY_COMPARE(animate->toolTip(),
+            QString("No animation model with all its files is installed — install one in Nukleus Manager."));
+        QVERIFY(!animate->isEnabled());
+        animationModels.append(ready);
+        sendModels();
+        QTRY_VERIFY(animate->isEnabled());
+        QCOMPARE(animate->toolTip(), QString("Animate"));
+        // R2: the form, the edit bubble and the New image card never coexist.
+        newImage->click();
+        QVERIFY(card->isActive());
+        animate->click();
+        QVERIFY(form->isActive() && !card->isActive() && !newImage->isChecked());
+        QVERIFY(!workspace->findChild<EditBubble*>()->isActive());
+        newImage->click();
+        QVERIFY(card->isActive() && !form->isActive() && !animate->isChecked());
+        animate->click();
+        // R4, R5: the broken model is not offered; the only usable one starts Loop at its default.
+        QVERIFY(form->modelSelector()->isHidden());
+        QCOMPARE(form->modelId(), QString("animation:wan"));
+        QVERIFY(!form->loopSwitch()->isHidden() && form->loopSwitch()->isChecked());
+        // R7: translated prompt, start and end images, model, mp4, computed size and pingPong only.
+        QImage end(96, 160, QImage::Format_RGB32);
+        end.fill(Qt::yellow);
+        QVERIFY(form->setEndImage(end));
+        form->prompt()->setPlainText("Elle respire lentement");
+        QTRY_VERIFY(form->submitButton()->isEnabled());
+        form->submitButton()->click();
+        QVERIFY(!form->isActive() && form->prompt()->toPlainText().isEmpty() && form->endImage().isNull());
+        // R9: the pending entry appears at once, without changing the selection.
+        QCOMPARE(model->rowCount(), 2);
+        const QUuid first = model->index(1).data(GenerationHistoryModel::IdRole).toUuid();
+        QCOMPARE(model->state(first), GenerationHistoryModel::State::Pending);
+        QCOMPARE(workspace->currentImage(), start);
+        QTRY_COMPARE(submissions.size(), 1);
+        auto translation = submissions.takeFirst();
+        QCOMPARE(translation.value("operation").toString(), QString("prompt.enhance"));
+        QCOMPARE(translation.value("options").toObject().value("prompt").toString(), QString("Elle respire lentement"));
+        QCOMPARE(model->index(1).data(GenerationHistoryModel::StatusRole).toString(), QString("Translating the prompt…"));
+        send({{"type", "result"}, {"jobId", translation.value("jobId")}, {"operation", "prompt.enhance"},
+            {"prompt", "She breathes slowly"}});
+        QTRY_COMPARE(submissions.size(), 1);
+        const auto submission = submissions.first();
+        const auto options = submission.value("options").toObject();
+        QCOMPARE(submission.value("operation").toString(), QString("image.animate"));
+        QCOMPARE(options.value("modelId").toString(), QString("animation:wan"));
+        QCOMPARE(options.value("prompt").toString(), QString("She breathes slowly"));
+        QVERIFY(options.value("hasEndImage").toBool());
+        QVERIFY(!options.contains("negativePrompt"));
+        // R8: the 3:5 start image at the model's 640 × 640 area, in multiples of 16.
+        QCOMPARE(options.value("parameters").toObject(), (QJsonObject{{"container", "mp4"}, {"width", 496},
+            {"height", 832}, {"pingPong", true}}));
+        const QString firstJob = submission.value("jobId").toString();
+        QTRY_COMPARE(uploads.value(firstJob).size(), 2);
+        QCOMPARE(QImage::fromData(uploads.value(firstJob).at(0)), start);
+        QCOMPARE(QImage::fromData(uploads.value(firstJob).at(1)), end);
+        // R9: progress shows in the entry; the application stays usable and other jobs queue meanwhile.
+        send({{"type", "progress"}, {"jobId", firstJob}, {"progress", QJsonObject{{"stage", "sampling"},
+            {"percentage", 40}, {"currentStep", 2}, {"totalSteps", 4}}}});
+        QTRY_COMPARE(model->index(1).data(GenerationHistoryModel::ProgressRole).toInt(), 40);
+        QCOMPARE(model->index(1).data(GenerationHistoryModel::StatusRole).toString(), QString("Sampling: 2 / 4"));
+        QVERIFY(!client->jobActive() && client->canEdit());
+        QVERIFY(animate->isEnabled());
+        animate->click();
+        form->prompt()->setPlainText("Elle respire lentement"); // The cached translation goes straight out.
+        form->submitButton()->click();
+        QTRY_COMPARE(submissions.size(), 2);
+        const auto second = submissions.last();
+        QCOMPARE(second.value("operation").toString(), QString("image.animate"));
+        QVERIFY(!second.value("options").toObject().value("hasEndImage").toBool());
+        QTRY_COMPARE(uploads.value(second.value("jobId").toString()).size(), 1);
+        const QUuid secondTile = model->index(2).data(GenerationHistoryModel::IdRole).toUuid();
+        QCOMPARE(model->state(secondTile), GenerationHistoryModel::State::Pending);
+        // R10: the video becomes an animation entry, shown by its first frame with a video mark.
+        send({{"type", "result"}, {"jobId", firstJob}, {"operation", "image.animate"}, {"mimeType", "video/mp4"},
+            {"frames", 6}, {"fps", 8}});
+        peer->sendBinaryMessage(video);
+        QTRY_COMPARE(model->state(first), GenerationHistoryModel::State::Ready);
+        QCOMPARE(model->kind(first), GenerationHistoryModel::Kind::Animation);
+        QCOMPARE(model->animation(first).video, video);
+        QCOMPARE(model->animation(first).size, QSize(64, 48));
+        QCOMPARE(model->animation(first).frames, 6);
+        QCOMPARE(model->animation(first).fps, 8);
+        QVERIFY(model->image(first).isNull());
+        QCOMPARE(model->prompt(first), QString("She breathes slowly"));
+        const QImage thumbnail = model->index(1).data(Qt::DecorationRole).value<QIcon>().pixmap(QSize(128, 96)).toImage();
+        const QColor corner = thumbnail.pixelColor(thumbnail.width() - 3, 2);
+        QVERIFY2(corner.red() > 200 && corner.green() < 60 && corner.blue() < 60, qPrintable(corner.name()));
+        const QColor mark = thumbnail.pixelColor(thumbnail.width() / 8, thumbnail.height() * 7 / 8);
+        QVERIFY2(mark.red() < 200 || mark.green() > 60 || mark.blue() > 60, qPrintable(mark.name()));
+        QCOMPARE(workspace->currentImage(), start); // Not selected on arrival.
+        // R10: a failure keeps its message.
+        send({{"type", "error"}, {"jobId", second.value("jobId")}, {"code", "generation-failed"},
+            {"message", "ErrorOutOfDeviceMemory"}});
+        QTRY_COMPARE(model->state(secondTile), GenerationHistoryModel::State::Failed);
+        QVERIFY(model->index(2).data(GenerationHistoryModel::StatusRole).toString().contains("ErrorOutOfDeviceMemory"));
+        // R10: so does an animation cut off by a lost connection.
+        animate->click();
+        form->prompt()->setPlainText("Elle respire lentement");
+        form->submitButton()->click();
+        QTRY_COMPARE(submissions.size(), 3);
+        const QUuid third = model->index(3).data(GenerationHistoryModel::IdRole).toUuid();
+        peer->close();
+        QTRY_COMPARE(model->state(third), GenerationHistoryModel::State::Failed);
+        QVERIFY(!model->index(3).data(GenerationHistoryModel::StatusRole).toString().isEmpty());
+        // R11: selecting the animation plays it in a loop at once; a click pauses and resumes it.
+        history->setCurrentIndex(model->index(1));
+        QCOMPARE(workspace->currentAnimation(), first);
+        auto* preview = workspace->preview();
+        QVERIFY(preview->hasAnimation());
+        QTRY_VERIFY(preview->isPlaying());
+        QTRY_VERIFY(!preview->currentFrame().isNull());
+        QCOMPARE(preview->currentFrame().size(), QSize(64, 48));
+        QVERIFY(preview->accessibleDescription().startsWith("64 × 48 px · 6 frames · 8 fps · "));
+        QTest::mouseClick(preview->viewport(), Qt::LeftButton, {}, preview->viewport()->rect().center());
+        QTRY_VERIFY(!preview->isPlaying());
+        QTest::mouseClick(preview->viewport(), Qt::LeftButton, {}, preview->viewport()->rect().center());
+        QTRY_VERIFY(preview->isPlaying());
+        // R12: the actions that need a still image are disabled; viewing and saving stay.
+        for (const char* name : {"imageCrop", "imageUpscale", "imageDownscale", "imageSharpen", "imageEditWithIdentity",
+                 "imageAnimate"})
+            QVERIFY2(!window.findChild<QToolButton*>(name)->isEnabled(), name);
+        QTRY_VERIFY(!workspace->findChild<EditBubble*>()->isActive());
+        QVERIFY(window.findChild<QToolButton*>("imageSaveAs")->isEnabled());
+        QVERIFY(window.findChild<QToolButton*>("imageZoomIn")->isEnabled());
+        // R13: Save as offers MP4 first and writes the received bytes unchanged.
+        const bool nativeDialogsDisabled = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+        QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+        const auto restoreDialogs = qScopeGuard([&] {
+            QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nativeDialogsDisabled);
+        });
+        QTemporaryDir directory;
+        const QString path = directory.filePath("breathing");
+        QStringList filters;
+        QTimer::singleShot(0, &window, [&] {
+            auto* chooser = window.findChild<QFileDialog*>();
+            QVERIFY(chooser);
+            filters = chooser->nameFilters();
+            chooser->selectFile(path);
+            QMetaObject::invokeMethod(chooser, "accept", Qt::QueuedConnection);
+        });
+        window.findChild<QToolButton*>("imageSaveAs")->click();
+        QCOMPARE(filters.value(0), QString("MP4 video (*.mp4)"));
+        QFile saved(path + ".mp4");
+        QVERIFY(saved.open(QIODevice::ReadOnly));
+        QCOMPARE(saved.readAll(), video);
+        // Selecting a still image again stops the video.
+        history->setCurrentIndex(model->index(0));
+        QVERIFY(!preview->hasAnimation());
+        QVERIFY(workspace->currentAnimation().isNull());
+        QCOMPARE(workspace->currentImage(), start);
+    }
+
     void cleanupTestCase() { QSettings().clear(); }
 };
 QTEST_MAIN(CanvasTest)

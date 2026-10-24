@@ -27,6 +27,10 @@ results. It speaks English and French, following the language of the system.
 - **Editing**: an edit bubble over the preview, with Fast, Balanced and Quality editing
   and reference images; crop, 2× upscale, 2× downscale and a light sharpening pass in the
   toolbar.
+- **Animation**: **Animate** in the toolbar turns the selected image into a short video
+  from a description of the motion, optionally towards an end image and as a seamless
+  loop. It plays in the preview, waits in the session history like any generation, and
+  saves as MP4, which plays everywhere.
 - **Identities**: front, profile and three-quarter portraits of one person from a written
   description, saved as a `.kiraid` package, then attached to new images or applied to
   edits.
@@ -52,10 +56,11 @@ macOS and Windows builds still need checks on real desktops.
 
 - A [Nukleus](https://github.com/jstmichel/nukleus) 0.1 service with an image model for
   each preset and editing quality. An LLM marked as default prompt translator and enhancer
-  enables translation, ✨ and Kira Sparkle.
+  enables translation, ✨ and Kira Sparkle. Animation needs Nukleus 0.3 with ffmpeg and an
+  animation model.
 - To build: CMake 3.24+, a C++20 compiler, Qt 6.5+ (Widgets, Network, WebSockets, SVG,
-  LinguistTools) and LibArchive. On Arch Linux:
-  `sudo pacman -S --needed base-devel git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive`.
+  Multimedia with its FFmpeg backend, LinguistTools) and LibArchive. On Arch Linux:
+  `sudo pacman -S --needed base-devel git cmake ninja qt6-base qt6-websockets qt6-svg qt6-multimedia qt6-multimedia-ffmpeg qt6-tools libarchive`.
   [CONTRIBUTING.md](CONTRIBUTING.md) lists the Debian, Fedora and macOS packages.
 
 ## Installation

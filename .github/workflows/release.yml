@@ -25,9 +25,11 @@ jobs:
     steps:
       - name: Install dependencies
         # The layout tests measure text: without a font the container falls back to wide glyphs.
+        # The animation tests decode an MP4 through Qt Multimedia's FFmpeg backend.
         run: |
           pacman -Syu --noconfirm --needed \
-            git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive noto-fonts github-cli
+            git cmake ninja qt6-base qt6-multimedia qt6-multimedia-ffmpeg qt6-websockets qt6-svg qt6-tools \
+            libarchive noto-fonts github-cli
 
       - name: Check out
         uses: actions/checkout@v4

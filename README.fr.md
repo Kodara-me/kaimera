@@ -30,6 +30,10 @@ résultats. Il parle français et anglais, selon la langue du système.
 - **Retouche** : une bulle de modification au-dessus de l'aperçu, en qualité Rapide,
   Équilibré ou Qualité, avec des images de référence ; recadrage, agrandissement 2×,
   réduction 2× et une passe de netteté légère dans la barre d'outils.
+- **Animation** : **Animer**, dans la barre d'outils, transforme l'image sélectionnée en
+  courte vidéo à partir d'une description du mouvement, éventuellement vers une image de
+  fin et en boucle sans coupure. Elle se lit dans l'aperçu, attend son tour dans
+  l'historique de la session comme une génération et s'enregistre en MP4, lisible partout.
 - **Identités** : des portraits de face, de profil et de trois quarts d'une même personne à
   partir d'une description écrite, enregistrés dans un paquet `.kiraid`, puis joints aux
   nouvelles images ou appliqués aux retouches.
@@ -56,10 +60,11 @@ teste sous Linux ; les versions macOS et Windows restent à vérifier sur de vra
 
 - Un service [Nukleus](https://github.com/jstmichel/nukleus) 0.1 avec un modèle d'image pour
   chaque préréglage et chaque qualité de retouche. Un LLM désigné traducteur et
-  améliorateur de prompt par défaut active la traduction, ✨ et Kira Sparkle.
+  améliorateur de prompt par défaut active la traduction, ✨ et Kira Sparkle. L'animation
+  demande Nukleus 0.3 avec ffmpeg et un modèle d'animation.
 - Pour compiler : CMake 3.24+, un compilateur C++20, Qt 6.5+ (Widgets, Network, WebSockets,
-  SVG, LinguistTools) et LibArchive. Sous Arch Linux :
-  `sudo pacman -S --needed base-devel git cmake ninja qt6-base qt6-websockets qt6-svg qt6-tools libarchive`.
+  SVG, Multimedia avec son moteur FFmpeg, LinguistTools) et LibArchive. Sous Arch Linux :
+  `sudo pacman -S --needed base-devel git cmake ninja qt6-base qt6-websockets qt6-svg qt6-multimedia qt6-multimedia-ffmpeg qt6-tools libarchive`.
   [CONTRIBUTING.md](CONTRIBUTING.md) donne les paquets Debian, Fedora et macOS.
 
 ## Installation

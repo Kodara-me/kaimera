@@ -1,6 +1,44 @@
 #include "GenerationHistoryModel.h"
 #include <Ardoise/Theme.h>
 #include <QIcon>
+#include <QPainter>
+#include <QPainterPath>
+
+namespace
+{
+QPixmap thumbnailOf(const QImage& image)
+{
+    return QPixmap::fromImage(image.scaled(Ardoise::Theme::tokens().metrics.thumbnailSize * 2,
+        Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
+
+// An animation's thumbnail: its first frame with a play mark in the bottom-left corner.
+QPixmap animationThumbnail(const QImage& firstFrame)
+{
+    QPixmap pixmap = thumbnailOf(firstFrame);
+    const auto& tokens = Ardoise::Theme::tokens();
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    const qreal side = qMax(12.0, qMin(pixmap.width(), pixmap.height()) * 0.3);
+    const qreal margin = side * 0.25;
+    const QRectF badge(margin, pixmap.height() - margin - side, side, side);
+    QColor background = tokens.colors.backgroundElevated;
+    background.setAlpha(220);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(background);
+    painter.drawEllipse(badge);
+    QPainterPath play;
+    const QPointF center = badge.center();
+    const qreal r = side * 0.24;
+    play.moveTo(center.x() - r * 0.7, center.y() - r);
+    play.lineTo(center.x() + r, center.y());
+    play.lineTo(center.x() - r * 0.7, center.y() + r);
+    play.closeSubpath();
+    painter.setBrush(tokens.colors.textPrimary);
+    painter.drawPath(play);
+    return pixmap;
+}
+}
 
 GenerationHistoryModel::GenerationHistoryModel(QObject* parent)
     : QAbstractListModel(parent)
@@ -25,6 +63,8 @@ QVariant GenerationHistoryModel::data(const QModelIndex& index, int role) const
         return entry.percentage;
     if (role == StatusRole)
         return entry.status;
+    if (role == KindRole)
+        return int(entry.kind);
     if (entry.state != State::Ready && (role == Qt::ToolTipRole || role == Qt::AccessibleTextRole)) {
         if (entry.state == State::Failed)
             return tr("Generation failed: %1").arg(entry.status);
@@ -54,9 +94,8 @@ QUuid GenerationHistoryModel::appendImage(const QImage& image, const QString& so
         return { };
     const QUuid id = QUuid::createUuid();
     beginInsertRows({ }, m_entries.size(), m_entries.size());
-    m_entries.append({ id, sourceLabel, image,
-        QPixmap::fromImage(image.scaled(Ardoise::Theme::tokens().metrics.thumbnailSize * 2,
-            Qt::KeepAspectRatio, Qt::SmoothTransformation)), prompt, negativePrompt, State::Ready, -1, { } });
+    m_entries.append({ id, sourceLabel, image, thumbnailOf(image), prompt, negativePrompt, State::Ready, -1, { },
+        Kind::Image, { } });
     endInsertRows();
     return id;
 }
@@ -96,10 +135,26 @@ bool GenerationHistoryModel::completePending(const QUuid& id, const QImage& imag
     auto& entry = m_entries[at];
     entry.state = State::Ready;
     entry.image = image;
-    entry.thumbnail = QPixmap::fromImage(image.scaled(Ardoise::Theme::tokens().metrics.thumbnailSize * 2,
-        Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    entry.thumbnail = thumbnailOf(image);
     entry.prompt = prompt;
     entry.negativePrompt = negativePrompt;
+    entry.status.clear();
+    emit dataChanged(index(at), index(at));
+    return true;
+}
+
+bool GenerationHistoryModel::completeAnimation(const QUuid& id, const Animation& animation, const QImage& firstFrame,
+    const QString& prompt)
+{
+    const int at = row(id);
+    if (at < 0 || firstFrame.isNull() || animation.video.isEmpty() || m_entries.at(at).state != State::Pending)
+        return false;
+    auto& entry = m_entries[at];
+    entry.state = State::Ready;
+    entry.kind = Kind::Animation;
+    entry.animation = animation;
+    entry.thumbnail = animationThumbnail(firstFrame);
+    entry.prompt = prompt;
     entry.status.clear();
     emit dataChanged(index(at), index(at));
     return true;
@@ -135,6 +190,18 @@ QString GenerationHistoryModel::prompt(const QUuid& id) const
 {
     const int at = row(id);
     return at < 0 ? QString() : m_entries.at(at).prompt;
+}
+
+GenerationHistoryModel::Kind GenerationHistoryModel::kind(const QUuid& id) const
+{
+    const int at = row(id);
+    return at < 0 ? Kind::Image : m_entries.at(at).kind;
+}
+
+GenerationHistoryModel::Animation GenerationHistoryModel::animation(const QUuid& id) const
+{
+    const int at = row(id);
+    return at < 0 ? Animation() : m_entries.at(at).animation;
 }
 
 GenerationHistoryModel::State GenerationHistoryModel::state(const QUuid& id) const

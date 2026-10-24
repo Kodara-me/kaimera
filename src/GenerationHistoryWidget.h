@@ -23,7 +23,9 @@ public:
     GenerationHistoryView* view() const { return m_view; }
     void removeImage(const QUuid& id);
 signals:
+    // A still image was selected, or the selection was cleared (null image).
     void imageSelected(const QImage& image);
+    void animationSelected(const QUuid& id);
 
 private:
     void updateHistory();
