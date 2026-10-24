@@ -7,6 +7,7 @@
 #include <Ardoise/PrimaryButton.h>
 #include <Ardoise/Theme.h>
 #include <QAbstractScrollArea>
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGraphicsOpacityEffect>
@@ -14,7 +15,9 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QPainter>
+#include <QLocale>
 #include <QPainterPath>
+#include <QPushButton>
 #include <QSignalBlocker>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -26,6 +29,11 @@ namespace
 int shadowMargin() { return Ardoise::Theme::tokens().metrics.spacing8; }
 constexpr int RevealTravel = 28;
 constexpr int MaximumWidth = 680;
+
+// The length presets, shortest first, and the frame rate used when the model has no fps default.
+constexpr int PresetFrames[] = {33, 41, 81};
+constexpr int MediumPreset = 1;
+constexpr int DefaultFrameRate = 16;
 
 // A film frame with a play triangle, drawn with the theme's icon colours.
 QPixmap animatePixmap(int side, const QColor& color)
@@ -106,6 +114,27 @@ AnimateForm::AnimateForm(QAbstractScrollArea* host)
     close->setProperty("kiraFlat", true);
     header->addWidget(close, 0, Qt::AlignTop);
     layout->addLayout(header);
+    // The length choice: three exclusive buttons, and what the chosen length means.
+    auto* lengthRow = new QHBoxLayout;
+    lengthRow->setSpacing(metrics.spacing8);
+    m_length = new QButtonGroup(this);
+    m_length->setExclusive(true);
+    const QString labels[] = {tr("Short"), tr("Medium"), tr("Long")};
+    for (int i = 0; i < 3; ++i) {
+        auto* button = new QPushButton(labels[i], m_panel);
+        button->setObjectName(QStringLiteral("animateLength%1").arg(i));
+        button->setCheckable(true);
+        button->setProperty("kiraFlat", true);
+        button->setToolTip(tr("Length of the animation"));
+        m_length->addButton(button, i);
+        lengthRow->addWidget(button);
+    }
+    m_length->button(MediumPreset)->setChecked(true);
+    m_summary = new QLabel(m_panel);
+    m_summary->setObjectName(QStringLiteral("animateSummary"));
+    lengthRow->addSpacing(metrics.spacing4);
+    lengthRow->addWidget(m_summary, 1);
+    layout->addLayout(lengthRow);
     // One end image at most, shown without a number like a base image.
     m_endImage = new ReferenceImageStrip(QStringLiteral("animateRemoveEndImage"), m_panel);
     m_endImage->setObjectName(QStringLiteral("animateEndImage"));
@@ -151,6 +180,9 @@ AnimateForm::AnimateForm(QAbstractScrollArea* host)
     connect(m_prompt, &QPlainTextEdit::textChanged, this, &AnimateForm::updateSubmit);
     connect(m_submit, &QPushButton::clicked, this, &AnimateForm::submitted);
     connect(m_model, &QComboBox::currentIndexChanged, this, &AnimateForm::selectModel);
+    connect(m_length, &QButtonGroup::idClicked, this, &AnimateForm::updateSummary);
+    connect(m_loop, &QCheckBox::toggled, this, &AnimateForm::updateSummary);
+    updateSummary();
 
     m_reveal->setStartValue(0.0);
     m_reveal->setEndValue(1.0);
@@ -195,6 +227,8 @@ void AnimateForm::setModels(const QList<Model>& models)
     m_model->setVisible(models.size() > 1);
     if (modelId() != previous)
         selectModel(m_model->currentIndex());
+    // The kept model's defaults may have changed: the summary follows them, the choice stays.
+    updateSummary();
     updateSubmit();
 }
 
@@ -206,14 +240,59 @@ QString AnimateForm::modelId() const
 void AnimateForm::selectModel(int index)
 {
     // What the switch shows is what runs: it starts at the model's own default.
-    if (index >= 0 && index < m_models.size())
-        m_loop->setChecked(m_models.at(index).pingPong);
+    if (index >= 0 && index < m_models.size()) {
+        const auto& model = m_models.at(index);
+        m_loop->setChecked(model.pingPong);
+        // Likewise the length: the preset nearest to the model's frame count, the shorter on a tie.
+        int preset = MediumPreset;
+        if (model.videoFrames) {
+            preset = 0;
+            for (int i = 1; i < 3; ++i)
+                if (qAbs(PresetFrames[i] - *model.videoFrames) < qAbs(PresetFrames[preset] - *model.videoFrames))
+                    preset = i;
+        }
+        m_length->button(preset)->setChecked(true);
+    }
+    updateSummary();
+}
+
+int AnimateForm::frameCount() const
+{
+    return PresetFrames[qBound(0, m_length->checkedId(), 2)];
+}
+
+int AnimateForm::frameRate() const
+{
+    const int index = m_model->currentIndex();
+    return index >= 0 && index < m_models.size() ? m_models.at(index).fps.value_or(DefaultFrameRate)
+                                                 : DefaultFrameRate;
+}
+
+QAbstractButton* AnimateForm::lengthButton(int index) const
+{
+    return m_length->button(index);
+}
+
+void AnimateForm::updateSummary()
+{
+    const auto line = [this](int frames) {
+        return tr("%n frame(s) · %1 s", nullptr, frames)
+            .arg(QLocale().toString(double(frames) / frameRate(), 'f', 1));
+    };
+    QString text = line(frameCount());
+    // A loop plays the frames forward, then backward without repeating the two ends.
+    if (loop())
+        text += QLatin1Char('\n') + tr("Loop: %1").arg(line(2 * frameCount() - 2));
+    m_summary->setText(text);
+    m_panel->layout()->invalidate();
+    relayout();
 }
 
 void AnimateForm::setPingPongAvailable(bool available)
 {
     m_pingPongAvailable = available;
     m_loop->setVisible(available);
+    updateSummary();
 }
 
 bool AnimateForm::loop() const

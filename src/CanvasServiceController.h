@@ -113,10 +113,10 @@ public:
     // queuedGenerationStatusChanged and their video through queuedAnimationFinished; a failure
     // before submission arrives through queuedGenerationFinished. The prompt is translated first
     // (holding the single-job guard), then sent with the start and end images (end may be null),
-    // the model, the MP4 container, the computed size and, when given, pingPong; nothing else,
-    // so that the model's defaults apply.
+    // the model, the MP4 container, the computed size, the length (videoFrames) and frame rate
+    // (fps) and, when given, pingPong; nothing else, so that the model's defaults apply.
     bool queueAnimation(const QUuid& ticket, const QImage& start, const QImage& end, const QString& prompt,
-        const QString& modelId, std::optional<bool> pingPong);
+        const QString& modelId, std::optional<bool> pingPong, int frames, int fps);
 
 signals:
     void generationModelsChanged();

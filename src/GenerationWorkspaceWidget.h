@@ -92,9 +92,10 @@ signals:
     void upscaleRequested(const QImage& image);
     void sharpenRequested(const QImage& image);
     // The Animate form's submission: the selected image, the end image (null without one) and,
-    // when the service makes ping-pong loops (sendPingPong), the Loop switch's state.
+    // when the service makes ping-pong loops (sendPingPong), the Loop switch's state, then the
+    // chosen length in frames and the frame rate it plays at.
     void animateRequested(const QImage& start, const QImage& end, const QString& prompt, const QString& modelId,
-        bool sendPingPong, bool pingPong);
+        bool sendPingPong, bool pingPong, int frames, int fps);
     // Sparkles in the edit bubble asks to improve the current instruction.
     void editImproveRequested(const QString& instruction);
     // Kira Sparkle sends a request with its base image (null without one) and references.

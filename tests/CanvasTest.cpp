@@ -4683,6 +4683,8 @@ private slots:
         QCOMPARE(request.at(3).toString(), still.id);
         QCOMPARE(request.at(4).toBool(), true);
         QCOMPARE(request.at(5).toBool(), true);
+        QCOMPARE(request.at(6).toInt(), 41); // animationLength_R6: Medium at 16 fps without defaults.
+        QCOMPARE(request.at(7).toInt(), 16);
         // R7: the form closes and clears its prompt and end image.
         QVERIFY(!animate->isChecked() && !form->isActive());
         QVERIFY(prompt->toPlainText().isEmpty());
@@ -4714,6 +4716,124 @@ private slots:
             GenerationWorkspaceWidget translated;
             QCOMPARE(translated.findChild<QToolButton*>("imageAnimate")->accessibleName(), QString("Animer"));
             QCOMPARE(translated.findChild<QPushButton*>("animateButton")->text(), QString("Animer"));
+        }
+        qApp->removeTranslator(&french);
+    }
+
+    void animationLength_R1_R2_R8()
+    {
+        AnimateForm::Model m33{"m33", "M33", false, 33, std::nullopt};
+        AnimateForm::Model m49{"m49", "M49", false, 49, std::nullopt};
+        AnimateForm::Model m81{"m81", "M81", false, 81, std::nullopt};
+        AnimateForm::Model none{"none", "None", false, std::nullopt, std::nullopt};
+        AnimateForm::Model tie{"tie", "Tie", false, 37, std::nullopt};
+        QScrollArea host;
+        host.resize(900, 700);
+        AnimateForm form(&host);
+        const auto chosen = [&] {
+            int checked = 0;
+            for (int i = 0; i < 3; ++i) checked += form.lengthButton(i)->isChecked();
+            return checked == 1 ? form.frameCount() : -1; // Exactly one is selected.
+        };
+        // R1: three presets, exactly one selected; Medium before any model.
+        QCOMPARE(form.lengthButton(0)->text(), QString("Short"));
+        QCOMPARE(form.lengthButton(1)->text(), QString("Medium"));
+        QCOMPARE(form.lengthButton(2)->text(), QString("Long"));
+        QCOMPARE(chosen(), 41);
+        // R2: the first list of models selects the nearest preset, the shorter on a tie.
+        for (const auto& [model, frames] : {std::pair{m33, 33}, {m49, 41}, {m81, 81}, {none, 41}, {tie, 33}}) {
+            AnimateForm fresh(&host);
+            fresh.setModels({model});
+            QCOMPARE(fresh.frameCount(), frames);
+            QVERIFY(fresh.lengthButton(0)->isCheckable());
+        }
+        form.setModels({m33, m81});
+        QCOMPARE(chosen(), 33);
+        // R2: a change in the selector selects again.
+        form.modelSelector()->setCurrentIndex(1);
+        QCOMPARE(chosen(), 81);
+        // R8: the user's choice stays across a new list that still holds the model.
+        form.lengthButton(0)->click();
+        QCOMPARE(chosen(), 33);
+        form.setModels({m33, m81});
+        QCOMPARE(form.modelId(), m81.id);
+        QCOMPARE(chosen(), 33);
+        form.setModels({m49, m81});
+        QCOMPARE(chosen(), 33);
+        // R8: across closing and reopening the form, and across a submission.
+        form.setActive(true);
+        form.setActive(false);
+        QCOMPARE(chosen(), 33);
+        form.setSubmitAvailable(true);
+        QSignalSpy submitted(&form, &AnimateForm::submitted);
+        form.prompt()->setPlainText("Wave");
+        form.submitButton()->click();
+        QCOMPARE(submitted.count(), 1);
+        form.clearDraft();
+        form.setModels({m49, m81});
+        QCOMPARE(chosen(), 33);
+        // R2: a new list without the selected model selects again.
+        form.setModels({m49});
+        QCOMPARE(form.modelId(), m49.id);
+        QCOMPARE(chosen(), 41);
+        form.lengthButton(2)->click();
+        form.setModels({none});
+        QCOMPARE(chosen(), 41);
+    }
+
+    void animationLength_R3_R4_R5()
+    {
+        const auto originalLocale = QLocale();
+        const auto restoreLocale = qScopeGuard([&] { QLocale::setDefault(originalLocale); });
+        AnimateForm::Model slow{"slow", "Slow", false, 41, std::nullopt};
+        AnimateForm::Model fast{"fast", "Fast", false, 41, 24};
+        QScrollArea host;
+        host.resize(900, 700);
+        AnimateForm form(&host);
+        form.setModels({slow, fast});
+        const auto summary = [&] { return form.lengthSummary()->text(); };
+        // R3, R4: 16 fps without a default, then the model's 24 fps.
+        QLocale::setDefault(QLocale("en_US"));
+        form.setModels({slow, fast}); // Refreshes the text under the pinned locale.
+        QCOMPARE(form.frameRate(), 16);
+        QCOMPARE(summary(), QString("41 frames · 2.6 s"));
+        form.lengthButton(0)->click();
+        QCOMPARE(summary(), QString("33 frames · 2.1 s"));
+        form.modelSelector()->setCurrentIndex(1);
+        QCOMPARE(form.frameRate(), 24);
+        QCOMPARE(form.frameCount(), 41);
+        QCOMPARE(summary(), QString("41 frames · 1.7 s"));
+        form.lengthButton(2)->click();
+        QCOMPARE(summary(), QString("81 frames · 3.4 s"));
+        form.modelSelector()->setCurrentIndex(0);
+        // R5: the loop line only while the switch is shown and on.
+        QCOMPARE(summary(), QString("41 frames · 2.6 s"));
+        form.setPingPongAvailable(true);
+        form.loopSwitch()->setChecked(true);
+        QCOMPARE(summary(), QString("41 frames · 2.6 s\nLoop: 80 frames · 5.0 s"));
+        QLocale::setDefault(QLocale("fr_CA"));
+        form.lengthButton(0)->click();
+        QCOMPARE(summary(), QString("33 frames · 2,1 s\nLoop: 64 frames · 4,0 s"));
+        form.loopSwitch()->setChecked(false);
+        QVERIFY(!summary().contains("Loop"));
+        form.loopSwitch()->setChecked(true);
+        form.setPingPongAvailable(false);
+        QVERIFY(!summary().contains("Loop"));
+        QCOMPARE(summary(), QString("33 frames · 2,1 s"));
+        // R7: French texts.
+        QTranslator french;
+        QVERIFY(french.load(QStringLiteral(":/translations/kaimera_fr.qm")));
+        qApp->installTranslator(&french);
+        {
+            AnimateForm translated(&host);
+            translated.setModels({slow});
+            translated.setPingPongAvailable(true);
+            translated.loopSwitch()->setChecked(true);
+            translated.lengthButton(0)->click();
+            QCOMPARE(translated.lengthButton(0)->text(), QString("Courte"));
+            QCOMPARE(translated.lengthButton(1)->text(), QString("Moyenne"));
+            QCOMPARE(translated.lengthButton(2)->text(), QString("Longue"));
+            QCOMPARE(translated.lengthSummary()->text(), QString("33 images · 2,1 s\nBoucle : 64 images · 4,0 s"));
         }
         qApp->removeTranslator(&french);
     }
@@ -4849,9 +4969,10 @@ private slots:
         QCOMPARE(options.value("prompt").toString(), QString("She breathes slowly"));
         QVERIFY(options.value("hasEndImage").toBool());
         QVERIFY(!options.contains("negativePrompt"));
-        // R8: the 3:5 start image at the model's 640 × 640 area, in multiples of 16.
+        // R8: the 3:5 start image at the model's 640 × 640 area, in multiples of 16. animationLength_R6:
+        // the model has no videoFrames or fps default, yet the request carries Medium at 16 fps.
         QCOMPARE(options.value("parameters").toObject(), (QJsonObject{{"container", "mp4"}, {"width", 496},
-            {"height", 832}, {"pingPong", true}}));
+            {"height", 832}, {"pingPong", true}, {"videoFrames", 41}, {"fps", 16}}));
         const QString firstJob = submission.value("jobId").toString();
         QTRY_COMPARE(uploads.value(firstJob).size(), 2);
         QCOMPARE(QImage::fromData(uploads.value(firstJob).at(0)), start);

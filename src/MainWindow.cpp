@@ -159,7 +159,14 @@ MainWindow::MainWindow(QWidget* parent)
         m_workspace->sparkle()->setSendEnabled(sparkleIssue.isEmpty(), sparkleIssue);
         QList<AnimateForm::Model> animationModels;
         for (const auto& model : m_serviceClient->animationModels())
-            animationModels.append({model.id, model.displayLabel(), model.recommendedOptions.value("pingPong").toBool()});
+        {
+            const auto& options = model.recommendedOptions;
+            const auto count = [&](const char* key) {
+                return options.contains(key) ? std::optional<int>(options.value(key).toInt()) : std::nullopt;
+            };
+            animationModels.append({model.id, model.displayLabel(), options.value("pingPong").toBool(),
+                count("videoFrames"), count("fps")});
+        }
         m_workspace->setAnimateAvailability(m_serviceClient->animateIssue(), animationModels,
             m_serviceClient->canPingPong());
         // The prompt's translation is a single job: another one running holds it back.
@@ -415,11 +422,11 @@ MainWindow::MainWindow(QWidget* parent)
     // Animations queue like edits: a progress tile that the animation replaces without selecting it.
     connect(m_workspace, &GenerationWorkspaceWidget::animateRequested, this,
         [this](const QImage& start, const QImage& end, const QString& prompt, const QString& modelId,
-            bool sendPingPong, bool pingPong) {
+            bool sendPingPong, bool pingPong, int frames, int fps) {
             const QUuid ticket = QUuid::createUuid();
             m_workspace->addPendingImage(ticket, tr("Animation"), tr("Submitting…"));
             if (!m_serviceClient->queueAnimation(ticket, start, end, prompt, modelId,
-                    sendPingPong ? std::optional<bool>(pingPong) : std::nullopt))
+                    sendPingPong ? std::optional<bool>(pingPong) : std::nullopt, frames, fps))
                 m_workspace->removeImage(ticket);
         });
     connect(m_serviceClient, &CanvasServiceController::queuedAnimationFinished, m_workspace,

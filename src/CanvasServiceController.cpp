@@ -841,7 +841,7 @@ QSize CanvasServiceController::animationSize(const QSize& start, const QJsonObje
 }
 
 bool CanvasServiceController::queueAnimation(const QUuid& ticket, const QImage& start, const QImage& end,
-    const QString& prompt, const QString& modelId, std::optional<bool> pingPong)
+    const QString& prompt, const QString& modelId, std::optional<bool> pingPong, int frames, int fps)
 {
     if (ticket.isNull() || start.isNull() || prompt.trimmed().isEmpty() || !animateIssue().isEmpty()) return false;
     const auto models = animationModels();
@@ -855,9 +855,11 @@ bool CanvasServiceController::queueAnimation(const QUuid& ticket, const QImage& 
         QBuffer buffer(bytes);
         if (!buffer.open(QIODevice::WriteOnly) || !image.save(&buffer, "PNG")) return false;
     }
-    // Only these parameters: duration, steps and the rest come from the model's defaults.
+    // Only these parameters: the length is always the user's choice, steps and the rest come from
+    // the model's defaults.
     const QSize size = animationSize(start.size(), model->recommendedOptions);
-    request.parameters = {{"container", "mp4"}, {"width", size.width()}, {"height", size.height()}};
+    request.parameters = {{"container", "mp4"}, {"width", size.width()}, {"height", size.height()},
+        {"videoFrames", frames}, {"fps", fps}};
     if (pingPong) request.parameters.insert("pingPong", *pingPong);
     if (const auto immediate = immediateTranslation({prompt})) {
         request.prompt = immediate->first();

@@ -309,9 +309,11 @@ GenerationWorkspaceWidget::GenerationWorkspaceWidget(QWidget* parent)
         const QString model = m_animateForm->modelId();
         const bool sendPingPong = m_animateForm->pingPongAvailable();
         const bool pingPong = m_animateForm->loop();
+        const int frames = m_animateForm->frameCount();
+        const int fps = m_animateForm->frameRate();
         m_animateForm->clearDraft();
         setAnimateOpen(false);
-        emit animateRequested(m_current, end, prompt, model, sendPingPong, pingPong);
+        emit animateRequested(m_current, end, prompt, model, sendPingPong, pingPong, frames, fps);
     });
     // Kira Sparkle's panel and the Animate form share the bottom of the preview.
     connect(m_sparkle, &KiraSparkle::expandedChanged, this, [this](bool expanded) {

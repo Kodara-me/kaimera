@@ -162,8 +162,11 @@ system locales, English otherwise.
   end image with the paperclip for the video to move towards. **Loop** (shown when the
   service can make ping-pong loops) plays the motion forward then backward for a
   seamless loop; it starts at the model's default. With several usable animation models,
-  a selector picks one. Duration, steps and the rest come from the model's defaults set
-  in Nukleus Manager; the video keeps the image's aspect ratio at the model's default
+  a selector picks one. **Short**, **Medium** and **Long** (33, 41 and 81 frames) set the
+  length; the form shows the frame count and duration (and the loop's, with Loop on) at the
+  model's frame rate, 16 fps without one. The choice starts at the model's default length
+  and stays as you set it until another model is selected. Steps and the rest come from
+  the model's defaults set in Nukleus Manager; the video keeps the image's aspect ratio at the model's default
   pixel area. The description is translated into English first, like edit instructions.
   A job takes minutes: it queues behind a progress tile in session history, and you can
   keep working meanwhile. The finished animation's tile shows its first frame with a

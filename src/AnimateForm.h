@@ -1,7 +1,10 @@
 #pragma once
 #include <QImage>
 #include <QWidget>
+#include <optional>
+class QAbstractButton;
 class QAbstractScrollArea;
+class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QGraphicsOpacityEffect;
@@ -13,7 +16,7 @@ class ReferenceImageStrip;
 namespace Ardoise { class PlainTextEdit; }
 // Floating Animate form over the bottom of the preview, in the edit bubble's style: a motion
 // prompt, a paperclip attaching one end image, an Animate button, and, when they apply, a Loop
-// switch and an animation model selector. Hiding it keeps its draft.
+// switch, a length choice with its duration, and an animation model selector. Hiding it keeps its draft.
 class AnimateForm final : public QWidget
 {
     Q_OBJECT
@@ -24,6 +27,9 @@ public:
         QString id;
         QString label;
         bool pingPong = false;
+        // The model's own defaults; absent when it sets none.
+        std::optional<int> videoFrames;
+        std::optional<int> fps;
     };
     explicit AnimateForm(QAbstractScrollArea* host);
     // The toolbar's Animate icon, painted in the theme's colours (accent for the form's header).
@@ -45,6 +51,12 @@ public:
     void setPingPongAvailable(bool available);
     bool pingPongAvailable() const { return m_pingPongAvailable; }
     bool loop() const;
+    // The chosen length in frames (Short, Medium or Long) and the frame rate it plays at: the
+    // selected model's fps default, else 16.
+    int frameCount() const;
+    int frameRate() const;
+    QAbstractButton* lengthButton(int index) const;
+    QLabel* lengthSummary() const { return m_summary; }
     // Whether submitting is possible apart from the prompt, with the reason when it is not.
     void setSubmitAvailable(bool available, const QString& issue = {});
     // Empties the prompt and removes the end image.
@@ -70,6 +82,7 @@ private:
     void relayout();
     void updateSubmit();
     void selectModel(int index);
+    void updateSummary();
     QAbstractScrollArea* m_host;
     QWidget* m_panel;
     ReferenceImageStrip* m_endImage;
@@ -78,6 +91,8 @@ private:
     QPushButton* m_submit;
     QCheckBox* m_loop;
     QComboBox* m_model;
+    QButtonGroup* m_length;
+    QLabel* m_summary;
     QVariantAnimation* m_reveal;
     QGraphicsOpacityEffect* m_opacity;
     QList<Model> m_models;
