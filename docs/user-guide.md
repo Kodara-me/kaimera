@@ -173,7 +173,11 @@ system locales, English otherwise.
   play mark; selecting it plays the video in a loop in the preview (click to pause or
   resume), with its size, frame count and frames per second in the badge. Image tools
   (crop, upscale, downscale, sharpen, edit, animate) are disabled on an animation.
-  **Save as** writes the MP4 video exactly as received; right-click offers Open, Save,
+  **Save as** writes the MP4 video exactly as received, or, choosing **PNG sprite
+  sheet**, one PNG with every frame at full size in playback order, left to right then
+  top to bottom, in a grid of ceil(√n) columns (unused cells stay transparent) for the
+  2D game engines that animate sprite sheets; its suggested name ends with the grid,
+  such as `animation-3x2.png` (3 columns, 2 rows). Right-click offers Open, Save,
   Copy prompt and Delete. Animations stay in memory until saved.
 - **Kira Sparkle** is the ✨ bubble in the preview's lower-right corner. It opens a
   chat to its left that greets you with "How can I help you?": the conversation, a

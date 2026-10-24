@@ -34,6 +34,7 @@ using Ardoise::CollapsibleSection;
 #include "PromptEditorWidget.h"
 #include "QualityStepSlider.h"
 #include "ServicePreferencesDialog.h"
+#include "VideoFrames.h"
 
 #include <Ardoise/PlainTextEdit.h>
 #include <Ardoise/Theme.h>
@@ -5072,6 +5073,87 @@ private slots:
         QVERIFY(!preview->hasAnimation());
         QVERIFY(workspace->currentAnimation().isNull());
         QCOMPARE(workspace->currentImage(), start);
+    }
+
+    void animationSpriteSheet_R14_R15()
+    {
+        // R14: ceil(sqrt(n)) columns, then as many rows as needed.
+        QVERIFY(!VideoFrames::spriteSheetGrid(0).isValid());
+        QCOMPARE(VideoFrames::spriteSheetGrid(1), QSize(1, 1));
+        QCOMPARE(VideoFrames::spriteSheetGrid(2), QSize(2, 1));
+        QCOMPARE(VideoFrames::spriteSheetGrid(5), QSize(3, 2));
+        QCOMPARE(VideoFrames::spriteSheetGrid(9), QSize(3, 3));
+        QCOMPARE(VideoFrames::spriteSheetGrid(10), QSize(4, 3));
+        QCOMPARE(VideoFrames::spriteSheetGrid(81), QSize(9, 9));
+        QFile fixture(QStringLiteral(KAIMERA_TEST_SPRITE_ANIMATION));
+        QVERIFY(fixture.open(QIODevice::ReadOnly));
+        const QByteArray video = fixture.readAll();
+        MainWindow window;
+        window.resize(1300, 800);
+        window.show();
+        auto* workspace = window.findChild<GenerationWorkspaceWidget*>();
+        auto* history = window.findChild<GenerationHistoryView*>();
+        auto* model = workspace->findChild<GenerationHistoryWidget*>()->model();
+        const QUuid id = QUuid::createUuid();
+        QVERIFY(model->appendPending(id, "Animation", "Waiting"));
+        QImage first(64, 48, QImage::Format_RGB32);
+        first.fill(Qt::red);
+        QVERIFY(model->completeAnimation(id, {video, "video/mp4", 5, 8, QSize(64, 48)}, first, "Elle respire"));
+        history->setCurrentIndex(model->index(0));
+        QCOMPARE(workspace->currentAnimation(), id);
+        QCOMPARE(workspace->animationSpriteGrid(), QSize(3, 2));
+        // The frames as the player decodes them, to compare each cell with.
+        QList<QImage> decoded;
+        bool decodedDone = false;
+        VideoFrames::readAllFrames(video, &window, [&](const QList<QImage>& frames) {
+            decoded = frames;
+            decodedDone = true;
+        });
+        QTRY_VERIFY_WITH_TIMEOUT(decodedDone, 30000);
+        QCOMPARE(decoded.size(), 5);
+        const bool nativeDialogsDisabled = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+        QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+        const auto restoreDialogs = qScopeGuard([&] {
+            QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nativeDialogsDisabled);
+        });
+        QTemporaryDir directory;
+        QStringList filters;
+        QString suggestedName;
+        QString path;
+        QTimer::singleShot(0, &window, [&] {
+            auto* chooser = window.findChild<QFileDialog*>();
+            QVERIFY(chooser);
+            filters = chooser->nameFilters();
+            chooser->selectNameFilter(filters.value(1));
+            emit chooser->filterSelected(filters.value(1));
+            suggestedName = QFileInfo(chooser->selectedFiles().value(0)).fileName();
+            path = directory.filePath(suggestedName);
+            chooser->selectFile(path);
+            QMetaObject::invokeMethod(chooser, "accept", Qt::QueuedConnection);
+        });
+        window.findChild<QToolButton*>("imageSaveAs")->click();
+        QCOMPARE(filters.value(0), QString("MP4 video (*.mp4)"));
+        QCOMPARE(filters.value(1), QString("PNG sprite sheet (*.png)"));
+        QCOMPARE(suggestedName, QString("animation-3x2.png"));
+        QTRY_VERIFY_WITH_TIMEOUT(QFileInfo::exists(path), 30000);
+        QImage sheet;
+        QTRY_VERIFY_WITH_TIMEOUT(sheet.load(path), 5000);
+        QCOMPARE(sheet.size(), QSize(192, 96));
+        // Frames in playback order, left to right then top to bottom, at full size.
+        for (int i = 0; i < 5; ++i) {
+            const QImage cell = sheet.copy((i % 3) * 64, (i / 3) * 48, 64, 48).convertToFormat(QImage::Format_ARGB32);
+            QCOMPARE(cell, decoded.at(i).convertToFormat(QImage::Format_ARGB32));
+        }
+        const QList<QColor> colors{Qt::red, QColor(0, 128, 0), Qt::blue, Qt::yellow, Qt::white};
+        for (int i = 0; i < 5; ++i) {
+            const QColor pixel = sheet.pixelColor((i % 3) * 64 + 32, (i / 3) * 48 + 24);
+            QVERIFY2(qAbs(pixel.red() - colors.at(i).red()) < 24 && qAbs(pixel.green() - colors.at(i).green()) < 24
+                    && qAbs(pixel.blue() - colors.at(i).blue()) < 24,
+                qPrintable(QString("frame %1 is %2").arg(i).arg(pixel.name())));
+        }
+        // The unused sixth cell is transparent.
+        QCOMPARE(sheet.pixelColor(2 * 64 + 32, 48 + 24).alpha(), 0);
+        QCOMPARE(sheet.pixelColor(2 * 64, 48).alpha(), 0);
     }
 
     void cleanupTestCase() { QSettings().clear(); }

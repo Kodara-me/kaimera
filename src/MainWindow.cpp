@@ -636,17 +636,34 @@ void MainWindow::openImage()
 
 void MainWindow::saveImage()
 {
-    // An animation is saved as the MP4 video the service returned, unchanged.
+    // An animation is saved as the MP4 video the service returned, unchanged, or as a PNG sprite sheet.
     if (!m_workspace->currentAnimation().isNull()) {
+        const QString videoFilter = tr("MP4 video (*.mp4)");
+        const QString sheetFilter = tr("PNG sprite sheet (*.png)");
+        const QSize grid = m_workspace->animationSpriteGrid();
         QFileDialog dialog(this, tr("Save Animation"));
         dialog.setAcceptMode(QFileDialog::AcceptSave);
         dialog.setDirectory(OutputSettingsWidget::preferredDirectory());
-        dialog.setNameFilters({tr("MP4 video (*.mp4)")});
+        dialog.setNameFilters({videoFilter, sheetFilter});
         dialog.setDefaultSuffix(QStringLiteral("mp4"));
+        // The sprite sheet's name tells the grid, which game engines need to cut it into frames.
+        connect(&dialog, &QFileDialog::filterSelected, &dialog, [&](const QString& filter) {
+            dialog.setDefaultSuffix(filter == sheetFilter ? QStringLiteral("png") : QStringLiteral("mp4"));
+            if (filter == sheetFilter)
+                dialog.selectFile(QStringLiteral("animation-%1x%2.png").arg(grid.width()).arg(grid.height()));
+        });
         if (dialog.exec() != QDialog::Accepted || dialog.selectedFiles().isEmpty())
             return;
+        const QString path = dialog.selectedFiles().first();
+        if (dialog.selectedNameFilter() == sheetFilter) {
+            m_workspace->saveAnimationSpriteSheet(path, [this](const QString& error) {
+                if (!error.isEmpty())
+                    showMessage(tr("Could not save animation"), error);
+            });
+            return;
+        }
         QString error;
-        if (!m_workspace->saveAnimation(dialog.selectedFiles().first(), &error))
+        if (!m_workspace->saveAnimation(path, &error))
             showMessage(tr("Could not save animation"), error);
         return;
     }

@@ -1059,37 +1059,37 @@ Negative prefix: %2</translation>
     <name>GenerationWorkspaceWidget</name>
     <message>
         <location filename="../src/GenerationWorkspaceWidget.cpp" line="204"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1051"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1078"/>
         <source>Improve sharpness</source>
         <translation>Improve sharpness</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1045"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1072"/>
         <source>Select a still image to animate it.</source>
         <translation>Select a still image to animate it.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1052"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1079"/>
         <source>Improve sharpness: requires the default editing quality&apos;s model and no running job</source>
         <translation>Improve sharpness: requires the default editing quality&apos;s model and no running job</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="984"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1011"/>
         <source>Write an instruction to improve it.</source>
         <translation>Write an instruction to improve it.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="985"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1012"/>
         <source>Improve the instruction: more detailed and structured, in the same language, without inventing anything</source>
         <translation>Improve the instruction: more detailed and structured, in the same language, without inventing anything</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.h" line="178"/>
+        <location filename="../src/GenerationWorkspaceWidget.h" line="184"/>
         <source>The default prompt enhancer is unavailable.</source>
         <translation>The default prompt enhancer is unavailable.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="550"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="577"/>
         <source>Only %n reference image(s) can be attached.</source>
         <translation>
             <numerusform>Only %n reference image can be attached.</numerusform>
@@ -1097,7 +1097,7 @@ Negative prefix: %2</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="540"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="567"/>
         <source>%n image(s) cannot be added: at most %1 images can be attached in total, %2 already are.</source>
         <translation>
             <numerusform>%n image cannot be added: at most %1 images can be attached in total, %2 already are.</numerusform>
@@ -1166,23 +1166,23 @@ Negative prefix: %2</translation>
     </message>
     <message>
         <location filename="../src/GenerationWorkspaceWidget.cpp" line="215"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="978"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1005"/>
         <source>Edit with an identity…</source>
         <translation>Edit with an identity…</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="519"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="546"/>
         <source>Add Reference Images</source>
         <translation>Add Reference Images</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="514"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="541"/>
         <source>Images (%1)</source>
         <translation>Images (%1)</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="543"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="552"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="570"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="579"/>
         <source>Could not add reference images</source>
         <translation>Could not add reference images</translation>
     </message>
@@ -1193,7 +1193,7 @@ Negative prefix: %2</translation>
     </message>
     <message>
         <location filename="../src/GenerationWorkspaceWidget.cpp" line="207"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1044"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1071"/>
         <source>Animate</source>
         <translation>Animate</translation>
     </message>
@@ -1224,81 +1224,88 @@ Negative prefix: %2</translation>
     </message>
     <message>
         <location filename="../src/GenerationWorkspaceWidget.cpp" line="393"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="413"/>
         <source>No animation selected.</source>
         <translation>No animation selected.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="557"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="418"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="424"/>
+        <source>The animation&apos;s frames could not be decoded.</source>
+        <translation>The animation&apos;s frames could not be decoded.</translation>
+    </message>
+    <message>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="584"/>
         <source>Attach Identity</source>
         <translation>Attach Identity</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="557"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="584"/>
         <source>Kira identity (*.kiraid)</source>
         <translation>Kira identity (*.kiraid)</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="567"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="594"/>
         <source>An identity reference image could not be read.</source>
         <translation>An identity reference image could not be read.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="571"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="598"/>
         <source>Could not attach identity</source>
         <translation>Could not attach identity</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="589"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="616"/>
         <source>No image selected.</source>
         <translation>No image selected.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="656"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="683"/>
         <source>Copy error</source>
         <translation>Copy error</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="687"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="735"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="714"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="762"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="688"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="736"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="715"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="763"/>
         <source>Save</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="657"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="714"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="743"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="684"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="741"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="770"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="968"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="995"/>
         <source>No editing quality is available</source>
         <translation>No editing quality is available</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="979"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1006"/>
         <source>Edit with an identity: %1</source>
         <translation>Edit with an identity: %1</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="697"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="740"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="724"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="767"/>
         <source>Copy prompt</source>
         <translation>Copy prompt</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="792"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="819"/>
         <source>Save Image</source>
         <translation>Save Image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="795"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="822"/>
         <source>PNG image (*.png)</source>
         <translation>PNG image (*.png)</translation>
     </message>
@@ -1313,67 +1320,67 @@ Negative prefix: %2</translation>
         <translation>Create identity from a prompt…</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="765"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="792"/>
         <source>Could not open video</source>
         <translation>Could not open video</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="765"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="792"/>
         <source>Could not open the video in the default video player.</source>
         <translation>Could not open the video in the default video player.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="770"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="797"/>
         <source>Save Animation</source>
         <translation>Save Animation</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="773"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="800"/>
         <source>MP4 video (*.mp4)</source>
         <translation>MP4 video (*.mp4)</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="779"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="806"/>
         <source>Could not save animation</source>
         <translation>Could not save animation</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="840"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="867"/>
         <source>Unassigned — configure this quality in Service Manager</source>
         <translation>Unassigned — configure this quality in Service Manager</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="841"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="868"/>
         <source>Assigned model is unavailable</source>
         <translation>Assigned model is unavailable</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="787"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="814"/>
         <source>Could not open image</source>
         <translation>Could not open image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="787"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="814"/>
         <source>Could not open the image in the default image application.</source>
         <translation>Could not open the image in the default image application.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="802"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="829"/>
         <source>Could not save image</source>
         <translation>Could not save image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="691"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="718"/>
         <source>Upscale</source>
         <translation>Upscale</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="705"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="732"/>
         <source>Use as base image</source>
         <translation>Use as base image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="707"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="734"/>
         <source>Add as reference</source>
         <translation>Add as reference</translation>
     </message>
@@ -2049,32 +2056,38 @@ Editing: %2</translation>
         <translation>Could not open image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="641"/>
+        <location filename="../src/MainWindow.cpp" line="642"/>
+        <source>PNG sprite sheet (*.png)</source>
+        <translation>PNG sprite sheet (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="644"/>
         <source>Save Animation</source>
         <translation>Save Animation</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="644"/>
+        <location filename="../src/MainWindow.cpp" line="641"/>
         <source>MP4 video (*.mp4)</source>
         <translation>MP4 video (*.mp4)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="650"/>
+        <location filename="../src/MainWindow.cpp" line="661"/>
+        <location filename="../src/MainWindow.cpp" line="667"/>
         <source>Could not save animation</source>
         <translation>Could not save animation</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="657"/>
+        <location filename="../src/MainWindow.cpp" line="674"/>
         <source>Save Image</source>
         <translation>Save Image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="660"/>
+        <location filename="../src/MainWindow.cpp" line="677"/>
         <source>%1 image (*.%2)</source>
         <translation>%1 image (*.%2)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="666"/>
+        <location filename="../src/MainWindow.cpp" line="683"/>
         <source>Could not save image</source>
         <translation>Could not save image</translation>
     </message>

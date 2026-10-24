@@ -401,6 +401,33 @@ bool GenerationWorkspaceWidget::saveAnimation(const QString& path, QString* erro
     return true;
 }
 
+QSize GenerationWorkspaceWidget::animationSpriteGrid() const
+{
+    return VideoFrames::spriteSheetGrid(m_history->model()->animation(m_currentAnimation).frames);
+}
+
+void GenerationWorkspaceWidget::saveAnimationSpriteSheet(const QString& path, std::function<void(const QString&)> done)
+{
+    const auto animation = m_history->model()->animation(m_currentAnimation);
+    if (animation.video.isEmpty()) {
+        done(tr("No animation selected."));
+        return;
+    }
+    VideoFrames::readAllFrames(animation.video, this, [path, expected = animation.frames, done](const QList<QImage>& frames) {
+        if (frames.isEmpty() || frames.size() != expected) {
+            done(tr("The animation's frames could not be decoded."));
+            return;
+        }
+        const QImage sheet = VideoFrames::spriteSheet(frames);
+        QSaveFile file(path);
+        if (sheet.isNull() || !file.open(QIODevice::WriteOnly) || !sheet.save(&file, "PNG") || !file.commit()) {
+            done(sheet.isNull() ? tr("The animation's frames could not be decoded.") : file.errorString());
+            return;
+        }
+        done({});
+    });
+}
+
 void GenerationWorkspaceWidget::setAnimateAvailability(const QString& issue, const QList<AnimateForm::Model>& models,
     bool pingPong)
 {

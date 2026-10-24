@@ -1,6 +1,7 @@
 #pragma once
 #include <QWidget>
 #include <QImage>
+#include <functional>
 #include <QTemporaryDir>
 #include <QUuid>
 #include <nukleus/Identity.h>
@@ -50,6 +51,11 @@ public:
     QUuid currentAnimation() const { return m_currentAnimation; }
     // Writes the selected animation's video bytes unchanged.
     bool saveAnimation(const QString& path, QString* error = nullptr) const;
+    // The grid, columns by rows, of the selected animation's sprite sheet; empty without one.
+    QSize animationSpriteGrid() const;
+    // Writes the selected animation as a PNG sprite sheet once its frames are decoded; done runs once
+    // with an error message, empty on success.
+    void saveAnimationSpriteSheet(const QString& path, std::function<void(const QString&)> done);
     AnimateForm* animateForm() const { return m_animateForm; }
     // Why the service cannot animate (empty when it can), the usable animation models and whether
     // it makes ping-pong loops; Animate needs a selected still image besides.

@@ -19,6 +19,10 @@ target_link_libraries(canvas-test PRIVATE danbooru-dictionary Nukleus::SDK Ardoi
 # A six-frame 64 × 48 H.264 MP4 at 8 fps: three red frames, then three blue ones.
 target_compile_definitions(canvas-test PRIVATE
     KAIMERA_TEST_ANIMATION="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/animation.mp4")
+# A five-frame 64 × 48 H.264 MP4 at 8 fps: red, green, blue, yellow, then white. Five frames leave
+# one cell of the 3 × 2 sprite sheet unused.
+target_compile_definitions(canvas-test PRIVATE
+    KAIMERA_TEST_SPRITE_ANIMATION="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/sprite-animation.mp4")
 add_test(NAME canvas-test COMMAND canvas-test)
 set_tests_properties(canvas-test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
