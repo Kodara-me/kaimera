@@ -19,6 +19,9 @@ target_compile_definitions(kaimera PRIVATE KAIMERA_VERSION="${PROJECT_VERSION}")
 
 if(WIN32)
     set_target_properties(kaimera PROPERTIES WIN32_EXECUTABLE TRUE)
+    target_sources(kaimera PRIVATE kaimera.rc)
+    set_source_files_properties(kaimera.rc PROPERTIES OBJECT_DEPENDS
+        "${CMAKE_SOURCE_DIR}/assets/icons/kaimera.ico")
 endif()
 
 if(APPLE)
