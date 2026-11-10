@@ -90,6 +90,16 @@ system locales, English otherwise.
   wide), reset by New Image. Except for Free, each shot adds fixed English framing
   words to both prompts, after the preset's style and before your text; they are
   never translated nor shown in the editors.
+- Step 1 also holds a **LoRAs** control (the identity panel does not): **Add a LoRA** lists
+  the installed LoRAs you have not chosen yet, including one installed or trained while
+  Kaimera runs. Each chosen LoRA shows its name, a weight from 0 to 2 in steps of 0.05
+  (1.0 when added) and a button that removes it; up to 8 can be chosen. Generate sends
+  them in the order you added them. For a LoRA trained in Kaimera, its trigger word is
+  added to the prompt after the shot's framing words and before your text, without being
+  translated or shown in the editors. The control is disabled, with a tooltip, when the
+  service cannot generate with LoRAs or none is installed. New Image clears the chosen
+  LoRAs; changing the preset keeps them. Edits, Improve sharpness, upscaling, identities
+  and Kira Sparkle never use them.
 - Step 3 "Reference images" (optional) attaches up to four images to the New image
   draft with its paperclip button and shows them beside it; they are uploaded in order with Generate and cleared by New Image.
   The person button beside it attaches a saved .kiraid identity: its references join

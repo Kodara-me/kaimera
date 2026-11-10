@@ -1,4 +1,5 @@
 #include "GenerationParametersWidget.h"
+#include "LoraPicker.h"
 #include "ResolutionPicker.h"
 #include <Ardoise/IconButton.h>
 #include <Ardoise/Theme.h>
@@ -51,6 +52,11 @@ GenerationParametersWidget::GenerationParametersWidget(QWidget* parent) : QWidge
     m_resolutionPicker->setAccessibleName(tr("Resolution"));
     m_resolutionPicker->hide();
     form->addRow(m_resolutionPicker);
+    m_loras = new LoraPicker(this);
+    m_loras->setObjectName(QStringLiteral("loraPicker"));
+    m_loras->hide();
+    form->addRow(m_loras);
+    connect(m_loras, &LoraPicker::choiceChanged, this, &GenerationParametersWidget::parametersChanged);
     showFormRow(form, m_preset, false);
     // The picker is a view of the resolution combo, which keeps the selection logic.
     connect(m_resolutionPicker, &ResolutionPicker::currentIndexChanged, m_resolution, &QComboBox::setCurrentIndex);
@@ -121,6 +127,11 @@ void GenerationParametersWidget::showGuidedControls(bool showResolution)
              static_cast<QWidget*>(m_cfg), m_seed->parentWidget()})
         showFormRow(form, field, false);
     m_resolutionPicker->setVisible(showResolution);
+}
+
+void GenerationParametersWidget::showLoras(bool visible)
+{
+    m_loras->setVisible(visible);
 }
 
 void GenerationParametersWidget::setModels(const QList<Nukleus::ModelInfo>& models)

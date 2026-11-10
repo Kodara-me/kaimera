@@ -38,6 +38,8 @@ results. It speaks English and French, following the language of the system.
   choose the folder, a name, a trigger word, an SDXL base model and the number of steps,
   and Kaimera trains it on the service, showing the progress in the pill, then lists the
   LoRA among the installed models. A `.txt` file next to an image adds to its caption.
+  In the New image card, **Add a LoRA** applies up to 8 installed LoRAs, each with a weight
+  from 0 to 2, and adds the trigger word of the ones Kaimera trained to the prompt.
 - **Kira Sparkle**: a chat that understands a request, asks when it is vague, proposes an
   image with its shot, ratio and prompt, and creates it once you accept.
 - **Prompt help**: write in any language; prompts are translated into English before

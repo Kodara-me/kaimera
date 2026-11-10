@@ -4,6 +4,7 @@
 #include "CanvasServiceController.h"
 #include "GenerationInspectorWidget.h"
 #include "GenerationParametersWidget.h"
+#include "LoraPicker.h"
 #include "GenerationPreviewWidget.h"
 #include "GenerationWorkspaceWidget.h"
 #include "JobActivityIndicator.h"
@@ -158,6 +159,9 @@ MainWindow::MainWindow(QWidget* parent)
         m_workspace->setSharpenEnabled(m_serviceClient->canSharpen());
         m_workspace->setEditEnabled(m_serviceClient->canEdit());
         m_workspace->setTrainLoraAvailability(m_serviceClient->trainLoraIssue());
+        // A LoRA installed while Kaimera runs is offered once the model list is refreshed.
+        m_panel->parameters()->loraPicker()->setModels(m_serviceClient->models(Nukleus::ModelCategory::Companion));
+        m_panel->parameters()->loraPicker()->setSupported(m_serviceClient->canGenerateWithLoras());
         m_workspace->setRoutingLocked(m_serviceClient->jobActive());
         const QString sparkleIssue = m_serviceClient->planIssue();
         m_workspace->sparkle()->setSendEnabled(sparkleIssue.isEmpty(), sparkleIssue);
@@ -259,7 +263,9 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_panel, &GenerationInspectorWidget::generationRequested, this,
         [this, queueGeneration]
         {
-            const auto request = m_panel->generationRequest();
+            auto request = m_panel->generationRequest();
+            // Only this Generate sends LoRAs, and only to a service that applies them.
+            if (m_serviceClient->canGenerateWithLoras()) request.loras = m_panel->parameters()->loraPicker()->chosen();
             // References the preset's model cannot use stay attached but are not sent.
             const bool references = m_panel->referencesUsed();
             if (!queueGeneration(request, references ? m_panel->references()->references() : QList<QImage>(),

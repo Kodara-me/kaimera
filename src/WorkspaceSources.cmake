@@ -1,6 +1,6 @@
 set(KIRA_WORKSPACE_SOURCES
     IdentityPanel.cpp IdentityPanel.h
-    LoraDataset.cpp LoraDataset.h TrainLoraDialog.cpp TrainLoraDialog.h
+    LoraDataset.cpp LoraDataset.h LoraPicker.cpp LoraPicker.h TrainLoraDialog.cpp TrainLoraDialog.h
     AvailableModelsDialog.cpp AvailableModelsDialog.h
     AnimateForm.cpp AnimateForm.h VideoFrames.cpp VideoFrames.h
     PromptEditorWidget.cpp EditBubble.cpp KiraSparkle.cpp ReferenceImageStrip.cpp QualityStepSlider.cpp StepHeader.cpp

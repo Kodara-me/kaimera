@@ -6,6 +6,7 @@ class QComboBox;
 class QSpinBox;
 class QDoubleSpinBox;
 class QToolButton;
+class LoraPicker;
 class ResolutionPicker;
 class GenerationParametersWidget final : public QWidget
 {
@@ -43,6 +44,10 @@ public:
     // random. Without the resolution picker, the hidden resolution follows the
     // mapped model.
     void showGuidedControls(bool showResolution = true);
+    // The LoRA picker under the resolution: hidden unless shown (only the New image card offers it).
+    // It is not part of generationRequest(): the card's Generate adds the chosen LoRAs itself.
+    void showLoras(bool visible);
+    LoraPicker *loraPicker() const { return m_loras; }
     // The selected service preset, or null without routing.
     const Nukleus::GenerationPreset *selectedPreset() const;
 signals:
@@ -52,6 +57,7 @@ private:
     void applyModelRecommendations(bool preserveOverrides);
     void resolveModel();
     ResolutionPicker *m_resolutionPicker;
+    LoraPicker *m_loras;
     std::optional<Nukleus::ModelRouting> m_routing;
     bool m_routed = false;
     bool m_locked = false;

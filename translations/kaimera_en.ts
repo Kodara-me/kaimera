@@ -1789,6 +1789,49 @@ Editing: %2</translation>
     </message>
 </context>
 <context>
+    <name>LoraPicker</name>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="19"/>
+        <source>LoRAs:</source>
+        <translation>LoRAs:</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="23"/>
+        <source>Add a LoRA</source>
+        <translation>Add a LoRA</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="72"/>
+        <source>The service cannot generate with LoRAs. Connect to a service that does, or update Nukleus.</source>
+        <translation>The service cannot generate with LoRAs. Connect to a service that does, or update Nukleus.</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="74"/>
+        <source>No LoRA is installed. Train one with Train a LoRA, or install one in Available Models.</source>
+        <translation>No LoRA is installed. Train one with Train a LoRA, or install one in Available Models.</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="122"/>
+        <source>Weight of %1</source>
+        <translation>Weight of %1</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="125"/>
+        <location filename="../src/LoraPicker.cpp" line="127"/>
+        <location filename="../src/LoraPicker.cpp" line="128"/>
+        <source>Remove %1</source>
+        <translation>Remove %1</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/LoraPicker.cpp" line="167"/>
+        <source>At most %n LoRA(s) can be chosen.</source>
+        <translation>
+            <numerusform>At most %n LoRA can be chosen.</numerusform>
+            <numerusform>At most %n LoRAs can be chosen.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/MainWindow.cpp" line="417"/>

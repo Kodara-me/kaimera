@@ -499,6 +499,28 @@ Update this document when durable architectural decisions change.
   Ardoise dialog while a training is queued or running (closing stops it; the protocol has
   no cancel) and ignores the event when the user keeps training. Tests:
   `tests/LoraTrainingTest.cpp` (fake service).
+- LoRAs in the New image card (Kodara-me/kaimera#20, specification #18): step 1 "Choose the
+  look" of `GenerationParametersWidget` holds a `LoraPicker` (`src/LoraPicker.{h,cpp}`)
+  under the resolution picker; the identity panel reuses the widget and leaves it hidden
+  (`showLoras(true)` is called only by the card). An "Add a LoRA" button opens a menu of the
+  installed LoRAs (companions of subtype `lora`, by display label) not yet chosen, rebuilt
+  on every model refresh (`MainWindow` feeds it from `models(Companion)` with each
+  availability update, so a LoRA installed while Kaimera runs is offered without a restart);
+  each chosen LoRA is a row with its label, a weight spin box (0–2, step 0.05, 1.0 when
+  added) and a remove button. At most 8 (`LoraPicker::MaximumLoras`; Add is disabled at 8).
+  The control is disabled with a tooltip when SDK `canGenerateWithLoras()` is false or no
+  LoRA is installed. The choice belongs to the card's draft: `resetDraft()` (New Image)
+  clears it, a preset change keeps it, a refresh drops the LoRAs no longer installed. It is
+  not part of `GenerationParametersWidget::generationRequest()` (Kira Sparkle reads that
+  request): only the card's Generate in `MainWindow` fills `ImageGenerationRequest::loras`
+  (order added, weight always set) and only when `canGenerateWithLoras()` holds. The trigger
+  words are derived from `request.loras` in `CanvasServiceController::submitQueuedNow`
+  (`loraTriggerWords`, from `rememberedLora`): they sit between the shot clauses and the
+  user's text, after the Danbooru normalization and the translation, which never see them,
+  and are never shown in the editors or a restored draft. Edits, Improve sharpness, Edit
+  with an identity, upscaling, identity portraits, animations and Kira Sparkle's generations
+  build requests with no `loras`, so they add no trigger word. Tests:
+  `tests/LoraPickerTest.cpp` (fake service).
 - Automatically use the first upscaler in the service catalogue; an empty list means no upscaler. Do not expose upscaler configuration in Service Preferences. Retain legacy Service/DefaultUpscalerModel and Service/DefaultEditionModel settings unchanged and unused. Show Upscale for an available eligible first upscaler and enable only with SDK availability and no active job. Upload the targeted image, retain it, append/select exactly twice its dimensions and smoothly resize native output when needed. Share the progress pill.
 
 

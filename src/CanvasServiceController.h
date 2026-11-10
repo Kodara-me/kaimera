@@ -121,6 +121,14 @@ public:
         QString baseModelId;
     };
     static std::optional<RememberedLora> rememberedLora(const QString& modelId);
+    // The service generates with LoRAs (SDK canGenerateWithLoras()).
+    bool canGenerateWithLoras() const;
+    // The remembered trigger words of the LoRAs, in their order; none for a LoRA Kaimera does not
+    // remember. queueGeneration adds them to the positive prompt of a request that holds LoRAs,
+    // after the shot clauses and before the user's text (Danbooru normalization and translation
+    // never see them): only a request with `loras` gets any, so edits and Kira Sparkle's
+    // generations, which send none, add none.
+    static QStringList loraTriggerWords(const QList<Nukleus::LoraWeight>& loras);
     // Animation: image.animate with MP4 output and an installed animation model with all its
     // files. Why the selected image cannot be animated, or empty when it can.
     QString animateIssue() const;

@@ -80,3 +80,25 @@ qt_add_resources(lora-training-test lora_training_test_translations
 if(MSVC)
     target_compile_options(lora-training-test PRIVATE /utf-8)
 endif()
+
+add_executable(lora-picker-test
+    ${KIRA_WORKSPACE_SOURCES}
+    LoraPickerTest.cpp
+    ../src/LocalStyles.cpp ../src/LocalStyles.h
+    ../src/resources.qrc
+    ../src/CanvasServiceController.cpp
+    ../src/LegacySettings.cpp
+    ../src/MainWindow.cpp
+    ../src/ServicePreferencesDialog.cpp
+)
+target_include_directories(lora-picker-test PRIVATE ../src ${CMAKE_BINARY_DIR}/src)
+target_link_libraries(lora-picker-test PRIVATE danbooru-dictionary Nukleus::SDK Ardoise::Widgets Qt6::Multimedia Qt6::Network Qt6::Test Qt6::Widgets)
+add_test(NAME lora-picker-test COMMAND lora-picker-test)
+set_tests_properties(lora-picker-test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+qt_add_resources(lora-picker-test lora_picker_test_translations
+    PREFIX /translations
+    BASE ${CMAKE_BINARY_DIR}/src
+    FILES ${KIRA_TRANSLATION_FILES})
+if(MSVC)
+    target_compile_options(lora-picker-test PRIVATE /utf-8)
+endif()

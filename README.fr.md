@@ -41,7 +41,9 @@ résultats. Il parle français et anglais, selon la langue du système.
   dossier d'images : vous choisissez le dossier, un nom, un mot déclencheur, un modèle de
   base SDXL et le nombre d'étapes, et Kaimera l'entraîne sur le service en montrant la
   progression dans la pastille, puis le range parmi les modèles installés. Un fichier
-  `.txt` à côté d'une image complète sa légende.
+  `.txt` à côté d'une image complète sa légende. Dans la carte Nouvelle image,
+  **Ajouter un LoRA** applique jusqu'à 8 LoRA installés, chacun avec un poids de 0 à 2, et
+  ajoute au prompt le mot déclencheur de ceux que Kaimera a entraînés.
 - **Kira Sparkle** : un chat qui comprend une demande, pose une question quand elle est
   floue, propose une image avec son cadrage, son format et son prompt, et la crée quand
   vous acceptez.

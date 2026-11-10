@@ -1789,6 +1789,49 @@ Editing: %2</source>
     </message>
 </context>
 <context>
+    <name>LoraPicker</name>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="19"/>
+        <source>LoRAs:</source>
+        <translation>LoRA :</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="23"/>
+        <source>Add a LoRA</source>
+        <translation>Ajouter un LoRA</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="72"/>
+        <source>The service cannot generate with LoRAs. Connect to a service that does, or update Nukleus.</source>
+        <translation>Le service ne peut pas générer avec des LoRA. Connectez-vous à un service qui le peut, ou mettez Nukleus à jour.</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="74"/>
+        <source>No LoRA is installed. Train one with Train a LoRA, or install one in Available Models.</source>
+        <translation>Aucun LoRA n’est installé. Entraînez-en un avec Entraîner un LoRA, ou installez-en un dans Modèles disponibles.</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="122"/>
+        <source>Weight of %1</source>
+        <translation>Poids de %1</translation>
+    </message>
+    <message>
+        <location filename="../src/LoraPicker.cpp" line="125"/>
+        <location filename="../src/LoraPicker.cpp" line="127"/>
+        <location filename="../src/LoraPicker.cpp" line="128"/>
+        <source>Remove %1</source>
+        <translation>Retirer %1</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/LoraPicker.cpp" line="167"/>
+        <source>At most %n LoRA(s) can be chosen.</source>
+        <translation>
+            <numerusform>Au plus %n LoRA peut être choisi.</numerusform>
+            <numerusform>Au plus %n LoRA peuvent être choisis.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/MainWindow.cpp" line="417"/>

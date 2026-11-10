@@ -1,5 +1,6 @@
 #include "GenerationInspectorWidget.h"
 #include "GenerationParametersWidget.h"
+#include "LoraPicker.h"
 #include "PromptEditorWidget.h"
 #include "ReferenceImageStrip.h"
 #include "ShotPicker.h"
@@ -64,6 +65,7 @@ GenerationInspectorWidget::GenerationInspectorWidget(QWidget* parent)
     m_negative->setPlaceholderText(tr("Blurry, low quality, text, watermark…"));
     m_parameters = new GenerationParametersWidget(content);
     m_parameters->showGuidedControls();
+    m_parameters->showLoras(true);
     m_shot = new ShotPicker(content);
     m_shot->setObjectName(QStringLiteral("shotPicker"));
     // One discreet AI action for both prompts: make them more detailed and structured.
@@ -227,6 +229,8 @@ void GenerationInspectorWidget::resetDraft()
     m_identityPrompt.clear();
     m_shot->setCurrentShot(ShotPicker::Shot::Free);
     m_parameters->resetDefaults();
+    // The chosen LoRAs belong to the draft; a change of preset keeps them.
+    m_parameters->loraPicker()->clear();
 }
 
 QString GenerationInspectorWidget::positivePrompt() const

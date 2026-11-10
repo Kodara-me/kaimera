@@ -629,6 +629,8 @@ QString CanvasServiceController::trainLoraIssue() const
     return {};
 }
 
+bool CanvasServiceController::canGenerateWithLoras() const { return m_client->canGenerateWithLoras(); }
+
 bool CanvasServiceController::trainLora(const Nukleus::LoraTrainingRequest& request, const QString& triggerWord)
 {
     if (jobActive() || m_textsDone || m_planDone || request.images.isEmpty()) return false;
@@ -652,6 +654,15 @@ std::optional<CanvasServiceController::RememberedLora> CanvasServiceController::
         return std::nullopt;
     return RememberedLora{settings.value(QStringLiteral("TriggerWord")).toString(),
         settings.value(QStringLiteral("BaseModelId")).toString()};
+}
+
+QStringList CanvasServiceController::loraTriggerWords(const QList<Nukleus::LoraWeight>& loras)
+{
+    QStringList words;
+    for (const auto& lora : loras)
+        if (const auto remembered = rememberedLora(lora.modelId); remembered && !remembered->triggerWord.trimmed().isEmpty())
+            words.append(remembered->triggerWord.trimmed());
+    return words;
 }
 
 bool CanvasServiceController::queueGeneration(const QUuid& ticket, const Nukleus::ImageGenerationRequest &request,
@@ -703,6 +714,9 @@ bool CanvasServiceController::submitQueuedNow(const QUuid& ticket, Nukleus::Imag
     const QString& identityPrompt, const ShotPrompts::Prefix& shot)
 {
     // The service places the style's prefixes before these framing clauses.
+    // The trigger words of the request's LoRAs (only the New image card's Generate sets any) sit
+    // between the shot clauses and the user's text, untouched by the normalizer and the translator.
+    request.prompt = ShotPrompts::prepend(loraTriggerWords(request.loras).join(QStringLiteral(", ")), request.prompt);
     request.prompt = ShotPrompts::prepend(shot.positive, request.prompt);
     request.negativePrompt = ShotPrompts::prepend(shot.negative, request.negativePrompt);
     if (!identityPrompt.trimmed().isEmpty())
