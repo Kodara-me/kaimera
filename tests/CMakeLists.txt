@@ -37,7 +37,7 @@ endif()
 
 add_executable(available-models-dialog-test
     AvailableModelsDialogTest.cpp ../src/AvailableModelsDialog.cpp ../src/AvailableModelsDialog.h
-    ../src/CanvasServiceController.cpp ../src/CanvasServiceController.h)
+    ../src/CanvasServiceController.cpp ../src/CanvasServiceController.h ../src/LoraDataset.cpp ../src/LoraDataset.h)
 target_include_directories(available-models-dialog-test PRIVATE ../src)
 target_link_libraries(available-models-dialog-test PRIVATE danbooru-dictionary Nukleus::SDK Ardoise::Widgets Qt6::Test Qt6::Widgets)
 qt_add_resources(available-models-dialog-test models_test_translations
@@ -57,4 +57,26 @@ set_tests_properties(kaimera-version PROPERTIES
 if(UNIX)
     add_test(NAME get-kaimera-test
         COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/GetKaimeraTest.sh" "${PROJECT_SOURCE_DIR}/scripts/get-kaimera.sh")
+endif()
+
+add_executable(lora-training-test
+    ${KIRA_WORKSPACE_SOURCES}
+    LoraTrainingTest.cpp
+    ../src/LocalStyles.cpp ../src/LocalStyles.h
+    ../src/resources.qrc
+    ../src/CanvasServiceController.cpp
+    ../src/LegacySettings.cpp
+    ../src/MainWindow.cpp
+    ../src/ServicePreferencesDialog.cpp
+)
+target_include_directories(lora-training-test PRIVATE ../src ${CMAKE_BINARY_DIR}/src)
+target_link_libraries(lora-training-test PRIVATE danbooru-dictionary Nukleus::SDK Ardoise::Widgets Qt6::Multimedia Qt6::Network Qt6::Test Qt6::Widgets)
+add_test(NAME lora-training-test COMMAND lora-training-test)
+set_tests_properties(lora-training-test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+qt_add_resources(lora-training-test lora_training_test_translations
+    PREFIX /translations
+    BASE ${CMAKE_BINARY_DIR}/src
+    FILES ${KIRA_TRANSLATION_FILES})
+if(MSVC)
+    target_compile_options(lora-training-test PRIVATE /utf-8)
 endif()

@@ -10,6 +10,8 @@
 #include "KiraSparkle.h"
 #include "ReferenceImageStrip.h"
 #include "ServicePreferencesDialog.h"
+#include "LoraDataset.h"
+#include "TrainLoraDialog.h"
 #include <Ardoise/Dialog.h>
 #include <Ardoise/IconProvider.h>
 #include <Ardoise/Theme.h>
@@ -24,6 +26,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QPlainTextEdit>
+#include <QPushButton>
 #include <QSettings>
 #include <QSaveFile>
 #include <QSignalBlocker>
@@ -154,6 +157,7 @@ MainWindow::MainWindow(QWidget* parent)
         m_workspace->setUpscaleEnabled(m_serviceClient->canUpscale());
         m_workspace->setSharpenEnabled(m_serviceClient->canSharpen());
         m_workspace->setEditEnabled(m_serviceClient->canEdit());
+        m_workspace->setTrainLoraAvailability(m_serviceClient->trainLoraIssue());
         m_workspace->setRoutingLocked(m_serviceClient->jobActive());
         const QString sparkleIssue = m_serviceClient->planIssue();
         m_workspace->sparkle()->setSendEnabled(sparkleIssue.isEmpty(), sparkleIssue);
@@ -431,6 +435,16 @@ MainWindow::MainWindow(QWidget* parent)
         });
     connect(m_serviceClient, &CanvasServiceController::queuedAnimationFinished, m_workspace,
         &GenerationWorkspaceWidget::completePendingAnimation);
+    // Training a LoRA is a single job: the form, then the pill follows the job to its end.
+    connect(m_workspace, &GenerationWorkspaceWidget::trainLoraRequested, this, &MainWindow::trainLora);
+    connect(m_serviceClient, &CanvasServiceController::loraTrainingFinished, this,
+        [this](const Nukleus::LoraTrainingResult& result) {
+            if (!m_activity) return;
+            if (result.succeeded)
+                m_activity->finish();
+            else
+                m_activity->fail(tr("LoRA training failed"), result.message);
+        });
     connect(m_serviceClient, &CanvasServiceController::generationStatusChanged, this,
         [this](const QString& message, int percentage)
         {
@@ -579,8 +593,52 @@ void MainWindow::showMessage(const QString& title, const QString& message)
     dialog.setContentWidget(content);
     dialog.exec();
 }
+void MainWindow::trainLora()
+{
+    TrainLoraDialog dialog(m_serviceClient->loraBaseModels(), m_panel->parameters()->modelId(),
+        LoraDataset::companionNames(m_serviceClient->models(Nukleus::ModelCategory::Companion)),
+        m_serviceClient->jobActive(), this);
+    connect(m_serviceClient, &CanvasServiceController::generationAvailabilityChanged, &dialog,
+        [this, &dialog] { dialog.setJobActive(m_serviceClient->jobActive()); });
+    if (dialog.exec() != QDialog::Accepted) return;
+    const auto request = dialog.request();
+    if (request && m_serviceClient->trainLora(*request, dialog.triggerWord()))
+        startActivity(m_workspace->activity(), tr("Training the LoRA %1").arg(request->outputName));
+}
+
+bool MainWindow::confirmCloseDuringTraining()
+{
+    Ardoise::Dialog dialog(this);
+    dialog.setObjectName(QStringLiteral("closeDuringTrainingDialog"));
+    dialog.setWindowTitle(tr("A LoRA is training"));
+    dialog.setWindowIcon(windowIcon());
+    auto* content = new QWidget;
+    auto* layout = new QVBoxLayout(content);
+    auto* label = new QLabel(tr("A LoRA is being trained. Closing Kaimera stops the training, and the LoRA "
+                                "will not be created."), content);
+    label->setObjectName(QStringLiteral("closeDuringTrainingText"));
+    label->setWordWrap(true);
+    layout->addWidget(label);
+    auto* buttons = new QDialogButtonBox(content);
+    auto* keep = buttons->addButton(tr("Keep training"), QDialogButtonBox::RejectRole);
+    keep->setObjectName(QStringLiteral("keepTraining"));
+    keep->setDefault(true);
+    auto* close = buttons->addButton(tr("Close and stop the training"), QDialogButtonBox::AcceptRole);
+    close->setObjectName(QStringLiteral("stopTraining"));
+    layout->addWidget(buttons);
+    connect(keep, &QPushButton::clicked, &dialog, &QDialog::reject);
+    connect(close, &QPushButton::clicked, &dialog, &QDialog::accept);
+    dialog.setContentWidget(content);
+    return dialog.exec() == QDialog::Accepted;
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    // Closing disconnects, which stops a training on the service and loses its work.
+    if (m_serviceClient && m_serviceClient->loraTrainingActive() && !confirmCloseDuringTraining()) {
+        event->ignore();
+        return;
+    }
     Ardoise::MainWindow::closeEvent(event);
     if (event->isAccepted())
         saveWindowState();

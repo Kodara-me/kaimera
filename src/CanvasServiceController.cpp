@@ -1,5 +1,6 @@
 #include "CanvasServiceController.h"
 #include "IdentityPrompts.h"
+#include "LoraDataset.h"
 #include <algorithm>
 #include <cmath>
 #include <utility>
@@ -14,6 +15,12 @@ namespace
 {
 const QString EndpointKey = QStringLiteral("Service/Endpoint");
 const QString TokenKey = QStringLiteral("Service/Token");
+const QString LorasGroup = QStringLiteral("Loras");
+// A model id holds characters that a settings key cannot (a slash would start a subgroup).
+QString loraKey(const QString& modelId)
+{
+    return QString::fromLatin1(modelId.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
+}
 }
 
 CanvasServiceController::CanvasServiceController(QObject *parent)
@@ -163,8 +170,11 @@ CanvasServiceController::CanvasServiceController(QObject *parent)
             else if (state == Nukleus::JobState::Running)
                 message = queued != m_queued.cend() ? (queued->animation ? tr("Animating…") : tr("Generating…"))
                     : m_upscaling ? tr("Upscaling…")
+                    : m_training ? tr("Training…")
                     : m_planDone ? tr("Understanding your request…")
                     : m_textsDone ? passStatus() : tr("Generating…");
+            else if (state == Nukleus::JobState::Uploading && m_training)
+                message = tr("Uploading the images…");
             else
                 return;
             if (queued != m_queued.cend())
@@ -219,6 +229,31 @@ CanvasServiceController::CanvasServiceController(QObject *parent)
             m_generationDiagnostic.clear();
             m_generationJobId.clear();
             emit generationFinished(canvasResult);
+            emit generationAvailabilityChanged();
+        });
+    // A lost connection fails a training here too, whether it is uploading, queued or running.
+    connect(m_client, &Nukleus::ServiceClient::loraTrainingFinished, this,
+        [this](const Nukleus::LoraTrainingResult& result) {
+            if (!m_training || result.jobId != m_generationJobId) return;
+            const auto training = *std::exchange(m_training, std::nullopt);
+            auto finished = result;
+            if (!result.succeeded && !m_generationDiagnostic.isEmpty())
+                finished.message += QLatin1Char('\n') + m_generationDiagnostic;
+            m_generationDiagnostic.clear();
+            m_generationJobId.clear();
+            if (result.succeeded) {
+                QSettings settings;
+                settings.beginGroup(LorasGroup);
+                settings.beginGroup(loraKey(result.modelId));
+                settings.setValue(QStringLiteral("TriggerWord"), training.triggerWord);
+                settings.setValue(QStringLiteral("BaseModelId"), training.baseModelId);
+                settings.endGroup();
+                settings.endGroup();
+                settings.sync();
+                // The new LoRA joins the installed companions without restarting.
+                m_client->requestModels();
+            }
+            emit loraTrainingFinished(finished);
             emit generationAvailabilityChanged();
         });
     // Animations only ever queue; a lost connection fails them here too.
@@ -501,6 +536,10 @@ QString CanvasServiceController::progressMessage(const Nukleus::GenerationProgre
         return progress.currentStep && progress.totalSteps
             ? tr("Sampling: %1 / %2").arg(*progress.currentStep).arg(*progress.totalSteps)
             : tr("Sampling…");
+    case Stage::Training:
+        return progress.currentStep && progress.totalSteps
+            ? tr("Training: %1 / %2").arg(*progress.currentStep).arg(*progress.totalSteps)
+            : tr("Training…");
     case Stage::Decoding: return tr("Decoding image…");
     case Stage::Saving:
     case Stage::Complete: return tr("Receiving image…");
@@ -572,6 +611,47 @@ bool CanvasServiceController::submitGeneration(const Nukleus::ImageGenerationReq
     emit generationStatusChanged(tr("Submitting…"), -1);
     emit generationAvailabilityChanged();
     return true;
+}
+
+bool CanvasServiceController::canTrainLoras() const { return m_client->canTrainLoras(); }
+
+QList<Nukleus::ModelInfo> CanvasServiceController::loraBaseModels() const
+{
+    return LoraDataset::baseModels(m_client->models(Nukleus::ModelCategory::ImageGeneration));
+}
+
+QString CanvasServiceController::trainLoraIssue() const
+{
+    if (!m_client->isAuthenticated()) return tr("Connect to the service to train a LoRA.");
+    if (!m_client->canTrainLoras()) return tr("The service cannot train LoRAs — update Nukleus.");
+    if (loraBaseModels().isEmpty())
+        return tr("No SDXL checkpoint (.safetensors) is installed — install one in Nukleus Manager.");
+    return {};
+}
+
+bool CanvasServiceController::trainLora(const Nukleus::LoraTrainingRequest& request, const QString& triggerWord)
+{
+    if (jobActive() || m_textsDone || m_planDone || request.images.isEmpty()) return false;
+    m_upscaling = false;
+    m_outputSize = {};
+    m_generationDiagnostic.clear();
+    m_generationJobId = m_client->submitLoraTraining(request);
+    if (m_generationJobId.isEmpty()) return false;
+    m_training = Training{triggerWord, request.baseModelId};
+    emit generationStatusChanged(tr("Submitting…"), -1);
+    emit generationAvailabilityChanged();
+    return true;
+}
+
+std::optional<CanvasServiceController::RememberedLora> CanvasServiceController::rememberedLora(const QString& modelId)
+{
+    QSettings settings;
+    settings.beginGroup(LorasGroup);
+    settings.beginGroup(loraKey(modelId));
+    if (!settings.contains(QStringLiteral("TriggerWord")) && !settings.contains(QStringLiteral("BaseModelId")))
+        return std::nullopt;
+    return RememberedLora{settings.value(QStringLiteral("TriggerWord")).toString(),
+        settings.value(QStringLiteral("BaseModelId")).toString()};
 }
 
 bool CanvasServiceController::queueGeneration(const QUuid& ticket, const Nukleus::ImageGenerationRequest &request,

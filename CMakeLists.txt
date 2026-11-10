@@ -22,10 +22,10 @@ if(EXISTS "${NUKLEUS_SOURCE_DIR}/src/sdk/CMakeLists.txt")
 else()
     # Without a sibling checkout: an installed NukleusSdk package, otherwise the pinned tag's SDK.
     FetchContent_Declare(NukleusSdk
-        GIT_REPOSITORY https://github.com/jstmichel/nukleus.git
-        GIT_TAG v0.3.0
+        GIT_REPOSITORY https://github.com/Kodara-me/nukleus.git
+        GIT_TAG v0.6.0
         SOURCE_SUBDIR src/sdk
-        FIND_PACKAGE_ARGS 0.3 CONFIG)
+        FIND_PACKAGE_ARGS 0.6 CONFIG)
     FetchContent_MakeAvailable(NukleusSdk)
 endif()
 

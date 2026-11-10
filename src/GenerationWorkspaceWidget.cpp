@@ -220,6 +220,11 @@ GenerationWorkspaceWidget::GenerationWorkspaceWidget(QWidget* parent)
         if (const auto identity = chooseIdentity(&references); identity && !source.isNull())
             emit editRequested(source, identity->editPrompt, references, m_defaultEditQuality, false);
     });
+    // Opens the form that trains a LoRA from a folder of images. Like creating an identity, it
+    // needs no selected image: only the service decides whether it is available.
+    m_trainLoraButton = alwaysEnabledTool(Ardoise::Icon::Upload, tr("Train a LoRA…"), "imageTrainLora");
+    setTrainLoraAvailability(tr("Connect to the service to train a LoRA."));
+    connect(m_trainLoraButton, &QToolButton::clicked, this, &GenerationWorkspaceWidget::trainLoraRequested);
     toolsLayout->addStretch();
     separator();
     connect(alwaysEnabledTool(Ardoise::Icon::Settings, tr("Service Preferences…"), "servicePreferencesButton"),
@@ -1078,4 +1083,10 @@ void GenerationWorkspaceWidget::updateImageTools()
     m_sharpenButton->setToolTip(m_sharpenEnabled || m_current.isNull() ? tr("Improve sharpness")
         : tr("Improve sharpness: requires the default editing quality's model and no running job"));
     updateEditButton();
+}
+
+void GenerationWorkspaceWidget::setTrainLoraAvailability(const QString& issue)
+{
+    m_trainLoraButton->setEnabled(issue.isEmpty());
+    m_trainLoraButton->setToolTip(issue.isEmpty() ? tr("Train a LoRA…") : issue);
 }

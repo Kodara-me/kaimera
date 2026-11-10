@@ -324,284 +324,316 @@ Explicit content: %1</translation>
 <context>
     <name>CanvasServiceController</name>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="45"/>
+        <location filename="../src/CanvasServiceController.cpp" line="52"/>
         <source>Prompt improvement failed: %1</source>
         <translation>Prompt improvement failed: %1</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="110"/>
+        <location filename="../src/CanvasServiceController.cpp" line="117"/>
         <source>The prompt enhancer invented: %1. Try again.</source>
         <translation>The prompt enhancer invented: %1. Try again.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="116"/>
+        <location filename="../src/CanvasServiceController.cpp" line="123"/>
         <source>The prompt enhancer left out: %1. Try again.</source>
         <translation>The prompt enhancer left out: %1. Try again.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="61"/>
+        <location filename="../src/CanvasServiceController.cpp" line="68"/>
         <source>The prompt enhancer repeated itself in a loop. Try again.</source>
         <translation>The prompt enhancer repeated itself in a loop. Try again.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="62"/>
+        <location filename="../src/CanvasServiceController.cpp" line="69"/>
         <source>The translator repeated itself in a loop. Try again.</source>
         <translation>The translator repeated itself in a loop. Try again.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="72"/>
+        <location filename="../src/CanvasServiceController.cpp" line="79"/>
         <source>The prompt enhancer answered in another language. Try again.</source>
         <translation>The prompt enhancer answered in another language. Try again.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="47"/>
+        <location filename="../src/CanvasServiceController.cpp" line="54"/>
         <source>The prompt enhancer returned an empty prompt.</source>
         <translation>The prompt enhancer returned an empty prompt.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="58"/>
-        <location filename="../src/CanvasServiceController.cpp" line="106"/>
-        <location filename="../src/CanvasServiceController.cpp" line="128"/>
+        <location filename="../src/CanvasServiceController.cpp" line="65"/>
+        <location filename="../src/CanvasServiceController.cpp" line="113"/>
+        <location filename="../src/CanvasServiceController.cpp" line="135"/>
         <source>Could not submit the prompt improvement.</source>
         <translation>Could not submit the prompt improvement.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="408"/>
-        <location filename="../src/CanvasServiceController.cpp" line="418"/>
+        <location filename="../src/CanvasServiceController.cpp" line="443"/>
+        <location filename="../src/CanvasServiceController.cpp" line="453"/>
         <source>Wait for the current job to finish.</source>
         <translation>Wait for the current job to finish.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="411"/>
-        <location filename="../src/CanvasServiceController.cpp" line="421"/>
+        <location filename="../src/CanvasServiceController.cpp" line="446"/>
+        <location filename="../src/CanvasServiceController.cpp" line="456"/>
         <source>No LLM is marked as the default prompt enhancer — choose one in Service Manager.</source>
         <translation>No LLM is marked as the default prompt enhancer — choose one in Service Manager.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="412"/>
+        <location filename="../src/CanvasServiceController.cpp" line="447"/>
         <source>The default prompt enhancer is unavailable.</source>
         <translation>The default prompt enhancer is unavailable.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="478"/>
+        <location filename="../src/CanvasServiceController.cpp" line="513"/>
         <source>Improving the prompt…</source>
         <translation>Improving the prompt…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="162"/>
+        <location filename="../src/CanvasServiceController.cpp" line="169"/>
         <source>Queued (position %1)</source>
         <translation>Queued (position %1)</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="162"/>
+        <location filename="../src/CanvasServiceController.cpp" line="169"/>
         <source>Queued…</source>
         <translation>Queued…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="164"/>
-        <location filename="../src/CanvasServiceController.cpp" line="167"/>
+        <location filename="../src/CanvasServiceController.cpp" line="171"/>
+        <location filename="../src/CanvasServiceController.cpp" line="175"/>
         <source>Generating…</source>
         <translation>Generating…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="423"/>
+        <location filename="../src/CanvasServiceController.cpp" line="458"/>
         <source>The default prompt enhancer cannot answer requests — check Nukleus and its model.</source>
         <translation>The default prompt enhancer cannot answer requests — check Nukleus and its model.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="492"/>
+        <location filename="../src/CanvasServiceController.cpp" line="527"/>
         <source>Decoding video…</source>
         <translation>Decoding video…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="493"/>
+        <location filename="../src/CanvasServiceController.cpp" line="528"/>
         <source>Receiving video…</source>
         <translation>Receiving video…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="497"/>
+        <location filename="../src/CanvasServiceController.cpp" line="532"/>
         <source>Preparing…</source>
         <translation>Preparing…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="498"/>
+        <location filename="../src/CanvasServiceController.cpp" line="533"/>
         <source>Starting…</source>
         <translation>Starting…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="499"/>
+        <location filename="../src/CanvasServiceController.cpp" line="534"/>
         <source>Loading model…</source>
         <translation>Loading model…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="502"/>
+        <location filename="../src/CanvasServiceController.cpp" line="537"/>
         <source>Sampling: %1 / %2</source>
         <translation>Sampling: %1 / %2</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="496"/>
+        <location filename="../src/CanvasServiceController.cpp" line="531"/>
         <source>Preparing the prompt…</source>
         <translation>Preparing the prompt…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="616"/>
+        <location filename="../src/CanvasServiceController.cpp" line="696"/>
         <source>Could not submit the generation.</source>
         <translation>Could not submit the generation.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="478"/>
+        <location filename="../src/CanvasServiceController.cpp" line="513"/>
         <source>Translating the prompt…</source>
         <translation>Translating the prompt…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="48"/>
+        <location filename="../src/CanvasServiceController.cpp" line="55"/>
         <source>The translator returned an empty prompt.</source>
         <translation>The translator returned an empty prompt.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="45"/>
+        <location filename="../src/CanvasServiceController.cpp" line="52"/>
         <source>Prompt translation failed: %1</source>
         <translation>Prompt translation failed: %1</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="129"/>
+        <location filename="../src/CanvasServiceController.cpp" line="136"/>
         <source>Could not submit the prompt translation.</source>
         <translation>Could not submit the prompt translation.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="798"/>
+        <location filename="../src/CanvasServiceController.cpp" line="878"/>
         <source>Could not submit the edit.</source>
         <translation>Could not submit the edit.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="503"/>
+        <location filename="../src/CanvasServiceController.cpp" line="538"/>
         <source>Sampling…</source>
         <translation>Sampling…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="504"/>
+        <location filename="../src/CanvasServiceController.cpp" line="543"/>
         <source>Decoding image…</source>
         <translation>Decoding image…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="506"/>
+        <location filename="../src/CanvasServiceController.cpp" line="545"/>
         <source>Receiving image…</source>
         <translation>Receiving image…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="507"/>
+        <location filename="../src/CanvasServiceController.cpp" line="546"/>
         <source>Generation failed.</source>
         <translation>Generation failed.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="572"/>
-        <location filename="../src/CanvasServiceController.cpp" line="633"/>
-        <location filename="../src/CanvasServiceController.cpp" line="694"/>
-        <location filename="../src/CanvasServiceController.cpp" line="810"/>
-        <location filename="../src/CanvasServiceController.cpp" line="886"/>
-        <location filename="../src/CanvasServiceController.cpp" line="897"/>
+        <location filename="../src/CanvasServiceController.cpp" line="611"/>
+        <location filename="../src/CanvasServiceController.cpp" line="641"/>
+        <location filename="../src/CanvasServiceController.cpp" line="713"/>
+        <location filename="../src/CanvasServiceController.cpp" line="774"/>
+        <location filename="../src/CanvasServiceController.cpp" line="890"/>
+        <location filename="../src/CanvasServiceController.cpp" line="966"/>
+        <location filename="../src/CanvasServiceController.cpp" line="977"/>
         <source>Submitting…</source>
         <translation>Submitting…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="273"/>
+        <location filename="../src/CanvasServiceController.cpp" line="308"/>
         <source>Service rejected the shared token. Check Service Preferences and save the exact token again.</source>
         <translation>Service rejected the shared token. Check Service Preferences and save the exact token again.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="138"/>
+        <location filename="../src/CanvasServiceController.cpp" line="145"/>
         <source>Kira Sparkle could not understand the request: %1</source>
         <translation>Kira Sparkle could not understand the request: %1</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="140"/>
+        <location filename="../src/CanvasServiceController.cpp" line="147"/>
         <source>Kira Sparkle returned an invalid plan.</source>
         <translation>Kira Sparkle returned an invalid plan.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="164"/>
+        <location filename="../src/CanvasServiceController.cpp" line="171"/>
         <source>Animating…</source>
         <translation>Animating…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="166"/>
-        <location filename="../src/CanvasServiceController.cpp" line="189"/>
-        <location filename="../src/CanvasServiceController.cpp" line="442"/>
+        <location filename="../src/CanvasServiceController.cpp" line="173"/>
+        <location filename="../src/CanvasServiceController.cpp" line="542"/>
+        <source>Training…</source>
+        <translation>Training…</translation>
+    </message>
+    <message>
+        <location filename="../src/CanvasServiceController.cpp" line="174"/>
+        <location filename="../src/CanvasServiceController.cpp" line="199"/>
+        <location filename="../src/CanvasServiceController.cpp" line="477"/>
         <source>Understanding your request…</source>
         <translation>Understanding your request…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="276"/>
+        <location filename="../src/CanvasServiceController.cpp" line="177"/>
+        <source>Uploading the images…</source>
+        <translation>Uploading the images…</translation>
+    </message>
+    <message>
+        <location filename="../src/CanvasServiceController.cpp" line="311"/>
         <source>Could not connect to %1: %2</source>
         <translation>Could not connect to %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="279"/>
+        <location filename="../src/CanvasServiceController.cpp" line="314"/>
         <source>Connected, but the service backend is unavailable. Check the service journal for sd-cli errors.</source>
         <translation>Connected, but the service backend is unavailable. Check the service journal for sd-cli errors.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="283"/>
+        <location filename="../src/CanvasServiceController.cpp" line="318"/>
         <source>Connecting to service…</source>
         <translation>Connecting to service…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="286"/>
+        <location filename="../src/CanvasServiceController.cpp" line="321"/>
         <source>Connected to service</source>
         <translation>Connected to service</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="290"/>
+        <location filename="../src/CanvasServiceController.cpp" line="325"/>
         <source>Service is ready</source>
         <translation>Service is ready</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="292"/>
+        <location filename="../src/CanvasServiceController.cpp" line="327"/>
         <source>Service connection was closed</source>
         <translation>Service connection was closed</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="294"/>
+        <location filename="../src/CanvasServiceController.cpp" line="329"/>
         <source>Could not connect to service</source>
         <translation>Could not connect to service</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="825"/>
+        <location filename="../src/CanvasServiceController.cpp" line="541"/>
+        <source>Training: %1 / %2</source>
+        <translation>Training: %1 / %2</translation>
+    </message>
+    <message>
+        <location filename="../src/CanvasServiceController.cpp" line="625"/>
+        <source>Connect to the service to train a LoRA.</source>
+        <translation>Connect to the service to train a LoRA.</translation>
+    </message>
+    <message>
+        <location filename="../src/CanvasServiceController.cpp" line="626"/>
+        <source>The service cannot train LoRAs — update Nukleus.</source>
+        <translation>The service cannot train LoRAs — update Nukleus.</translation>
+    </message>
+    <message>
+        <location filename="../src/CanvasServiceController.cpp" line="628"/>
+        <source>No SDXL checkpoint (.safetensors) is installed — install one in Nukleus Manager.</source>
+        <translation>No SDXL checkpoint (.safetensors) is installed — install one in Nukleus Manager.</translation>
+    </message>
+    <message>
+        <location filename="../src/CanvasServiceController.cpp" line="905"/>
         <source>Connect to the service to animate images.</source>
         <translation>Connect to the service to animate images.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="826"/>
+        <location filename="../src/CanvasServiceController.cpp" line="906"/>
         <source>The service cannot animate images — update Nukleus.</source>
         <translation>The service cannot animate images — update Nukleus.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="828"/>
+        <location filename="../src/CanvasServiceController.cpp" line="908"/>
         <source>The service cannot make MP4 videos — install ffmpeg where Nukleus runs.</source>
         <translation>The service cannot make MP4 videos — install ffmpeg where Nukleus runs.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="830"/>
+        <location filename="../src/CanvasServiceController.cpp" line="910"/>
         <source>No animation model with all its files is installed — install one in Nukleus Manager.</source>
         <translation>No animation model with all its files is installed — install one in Nukleus Manager.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="875"/>
+        <location filename="../src/CanvasServiceController.cpp" line="955"/>
         <source>Could not submit the animation.</source>
         <translation>Could not submit the animation.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="23"/>
+        <location filename="../src/CanvasServiceController.cpp" line="30"/>
         <source>Not connected to service.</source>
         <translation>Not connected to service.</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="165"/>
+        <location filename="../src/CanvasServiceController.cpp" line="172"/>
         <source>Upscaling…</source>
         <translation>Upscaling…</translation>
     </message>
     <message>
-        <location filename="../src/CanvasServiceController.cpp" line="250"/>
+        <location filename="../src/CanvasServiceController.cpp" line="285"/>
         <source>Could not encode the result image.</source>
         <translation>Could not encode the result image.</translation>
     </message>
@@ -1059,37 +1091,37 @@ Negative prefix: %2</translation>
     <name>GenerationWorkspaceWidget</name>
     <message>
         <location filename="../src/GenerationWorkspaceWidget.cpp" line="204"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1078"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1083"/>
         <source>Improve sharpness</source>
         <translation>Improve sharpness</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1072"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1077"/>
         <source>Select a still image to animate it.</source>
         <translation>Select a still image to animate it.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1079"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1084"/>
         <source>Improve sharpness: requires the default editing quality&apos;s model and no running job</source>
         <translation>Improve sharpness: requires the default editing quality&apos;s model and no running job</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1011"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1016"/>
         <source>Write an instruction to improve it.</source>
         <translation>Write an instruction to improve it.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1012"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1017"/>
         <source>Improve the instruction: more detailed and structured, in the same language, without inventing anything</source>
         <translation>Improve the instruction: more detailed and structured, in the same language, without inventing anything</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.h" line="184"/>
+        <location filename="../src/GenerationWorkspaceWidget.h" line="191"/>
         <source>The default prompt enhancer is unavailable.</source>
         <translation>The default prompt enhancer is unavailable.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="577"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="582"/>
         <source>Only %n reference image(s) can be attached.</source>
         <translation>
             <numerusform>Only %n reference image can be attached.</numerusform>
@@ -1097,7 +1129,7 @@ Negative prefix: %2</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="567"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="572"/>
         <source>%n image(s) cannot be added: at most %1 images can be attached in total, %2 already are.</source>
         <translation>
             <numerusform>%n image cannot be added: at most %1 images can be attached in total, %2 already are.</numerusform>
@@ -1166,151 +1198,162 @@ Negative prefix: %2</translation>
     </message>
     <message>
         <location filename="../src/GenerationWorkspaceWidget.cpp" line="215"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1005"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1010"/>
         <source>Edit with an identity…</source>
         <translation>Edit with an identity…</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="546"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="551"/>
         <source>Add Reference Images</source>
         <translation>Add Reference Images</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="541"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="546"/>
         <source>Images (%1)</source>
         <translation>Images (%1)</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="570"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="579"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="575"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="584"/>
         <source>Could not add reference images</source>
         <translation>Could not add reference images</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="248"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="253"/>
         <source>Choose a Base Image</source>
         <translation>Choose a Base Image</translation>
     </message>
     <message>
         <location filename="../src/GenerationWorkspaceWidget.cpp" line="207"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1071"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1076"/>
         <source>Animate</source>
         <translation>Animate</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="254"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="225"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1091"/>
+        <source>Train a LoRA…</source>
+        <translation>Train a LoRA…</translation>
+    </message>
+    <message>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="226"/>
+        <source>Connect to the service to train a LoRA.</source>
+        <translation>Connect to the service to train a LoRA.</translation>
+    </message>
+    <message>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="259"/>
         <source>Could not add the base image</source>
         <translation>Could not add the base image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="288"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="293"/>
         <source>Connect to the service to animate images.</source>
         <translation>Connect to the service to animate images.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="294"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="299"/>
         <source>Choose an End Image</source>
         <translation>Choose an End Image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="300"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="305"/>
         <source>Could not add the end image</source>
         <translation>Could not add the end image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="381"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="386"/>
         <source>The service returned an unreadable video.</source>
         <translation>The service returned an unreadable video.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="393"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="413"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="398"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="418"/>
         <source>No animation selected.</source>
         <translation>No animation selected.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="418"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="424"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="423"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="429"/>
         <source>The animation&apos;s frames could not be decoded.</source>
         <translation>The animation&apos;s frames could not be decoded.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="584"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="589"/>
         <source>Attach Identity</source>
         <translation>Attach Identity</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="584"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="589"/>
         <source>Kira identity (*.kiraid)</source>
         <translation>Kira identity (*.kiraid)</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="594"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="599"/>
         <source>An identity reference image could not be read.</source>
         <translation>An identity reference image could not be read.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="598"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="603"/>
         <source>Could not attach identity</source>
         <translation>Could not attach identity</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="616"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="621"/>
         <source>No image selected.</source>
         <translation>No image selected.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="683"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="688"/>
         <source>Copy error</source>
         <translation>Copy error</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="714"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="762"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="719"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="767"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="715"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="763"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="720"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="768"/>
         <source>Save</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="684"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="741"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="770"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="689"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="746"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="775"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="995"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1000"/>
         <source>No editing quality is available</source>
         <translation>No editing quality is available</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1006"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="1011"/>
         <source>Edit with an identity: %1</source>
         <translation>Edit with an identity: %1</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="724"/>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="767"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="729"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="772"/>
         <source>Copy prompt</source>
         <translation>Copy prompt</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="819"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="824"/>
         <source>Save Image</source>
         <translation>Save Image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="822"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="827"/>
         <source>PNG image (*.png)</source>
         <translation>PNG image (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="225"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="230"/>
         <source>Service Preferences…</source>
         <translation>Service Preferences…</translation>
     </message>
@@ -1320,67 +1363,67 @@ Negative prefix: %2</translation>
         <translation>Create identity from a prompt…</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="792"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="797"/>
         <source>Could not open video</source>
         <translation>Could not open video</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="792"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="797"/>
         <source>Could not open the video in the default video player.</source>
         <translation>Could not open the video in the default video player.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="797"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="802"/>
         <source>Save Animation</source>
         <translation>Save Animation</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="800"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="805"/>
         <source>MP4 video (*.mp4)</source>
         <translation>MP4 video (*.mp4)</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="806"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="811"/>
         <source>Could not save animation</source>
         <translation>Could not save animation</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="867"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="872"/>
         <source>Unassigned — configure this quality in Service Manager</source>
         <translation>Unassigned — configure this quality in Service Manager</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="868"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="873"/>
         <source>Assigned model is unavailable</source>
         <translation>Assigned model is unavailable</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="814"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="819"/>
         <source>Could not open image</source>
         <translation>Could not open image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="814"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="819"/>
         <source>Could not open the image in the default image application.</source>
         <translation>Could not open the image in the default image application.</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="829"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="834"/>
         <source>Could not save image</source>
         <translation>Could not save image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="718"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="723"/>
         <source>Upscale</source>
         <translation>Upscale</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="732"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="737"/>
         <source>Use as base image</source>
         <translation>Use as base image</translation>
     </message>
     <message>
-        <location filename="../src/GenerationWorkspaceWidget.cpp" line="734"/>
+        <location filename="../src/GenerationWorkspaceWidget.cpp" line="739"/>
         <source>Add as reference</source>
         <translation>Add as reference</translation>
     </message>
@@ -1748,367 +1791,397 @@ Editing: %2</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="413"/>
+        <location filename="../src/MainWindow.cpp" line="417"/>
         <source>Improving sharpness</source>
         <translation>Improving sharpness</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="402"/>
+        <location filename="../src/MainWindow.cpp" line="406"/>
         <source>Improving the instruction</source>
         <translation>Improving the instruction</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="407"/>
+        <location filename="../src/MainWindow.cpp" line="411"/>
         <source>Improving the descriptions</source>
         <translation>Improving the descriptions</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="394"/>
+        <location filename="../src/MainWindow.cpp" line="398"/>
         <source>Improving the prompts</source>
         <translation>Improving the prompts</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="383"/>
+        <location filename="../src/MainWindow.cpp" line="387"/>
         <source>Prompt improvement failed</source>
         <translation>Prompt improvement failed</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="223"/>
+        <location filename="../src/MainWindow.cpp" line="227"/>
         <source>Kira identity (*.kiraid)</source>
         <translation>Kira identity (*.kiraid)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="220"/>
-        <location filename="../src/MainWindow.cpp" line="230"/>
+        <location filename="../src/MainWindow.cpp" line="224"/>
+        <location filename="../src/MainWindow.cpp" line="234"/>
         <source>Could not save identity</source>
         <translation>Could not save identity</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="364"/>
-        <location filename="../src/MainWindow.cpp" line="455"/>
+        <location filename="../src/MainWindow.cpp" line="368"/>
+        <location filename="../src/MainWindow.cpp" line="469"/>
         <source>The service returned an unreadable image.</source>
         <translation>The service returned an unreadable image.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="238"/>
-        <location filename="../src/MainWindow.cpp" line="467"/>
+        <location filename="../src/MainWindow.cpp" line="242"/>
+        <location filename="../src/MainWindow.cpp" line="481"/>
         <source>Generated image</source>
         <translation>Generated image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="48"/>
+        <location filename="../src/MainWindow.cpp" line="51"/>
         <source>New Image</source>
         <translation>New Image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="50"/>
+        <location filename="../src/MainWindow.cpp" line="53"/>
         <source>Open…</source>
         <translation>Open…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="51"/>
+        <location filename="../src/MainWindow.cpp" line="54"/>
         <source>Save</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="95"/>
+        <location filename="../src/MainWindow.cpp" line="98"/>
         <source>Quit</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="60"/>
+        <location filename="../src/MainWindow.cpp" line="63"/>
         <source>Undo</source>
         <translation>Undo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="61"/>
+        <location filename="../src/MainWindow.cpp" line="64"/>
         <source>Redo</source>
         <translation>Redo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="62"/>
+        <location filename="../src/MainWindow.cpp" line="65"/>
         <source>Cut</source>
         <translation>Cut</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="63"/>
+        <location filename="../src/MainWindow.cpp" line="66"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="64"/>
+        <location filename="../src/MainWindow.cpp" line="67"/>
         <source>Paste</source>
         <translation>Paste</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="65"/>
+        <location filename="../src/MainWindow.cpp" line="68"/>
         <source>Select All</source>
         <translation>Select All</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="88"/>
+        <location filename="../src/MainWindow.cpp" line="91"/>
         <source>Fullscreen</source>
         <translation>Fullscreen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="93"/>
+        <location filename="../src/MainWindow.cpp" line="96"/>
         <source>Service Preferences…</source>
         <translation>Service Preferences…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="126"/>
+        <location filename="../src/MainWindow.cpp" line="129"/>
         <source>Fit Image</source>
         <translation>Fit Image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="127"/>
+        <location filename="../src/MainWindow.cpp" line="130"/>
         <source>Actual Size</source>
         <translation>Actual Size</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="128"/>
+        <location filename="../src/MainWindow.cpp" line="131"/>
         <source>Zoom In</source>
         <translation>Zoom In</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="129"/>
+        <location filename="../src/MainWindow.cpp" line="132"/>
         <source>Zoom Out</source>
         <translation>Zoom Out</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="174"/>
+        <location filename="../src/MainWindow.cpp" line="178"/>
         <source>Wait for the current job to finish.</source>
         <translation>Wait for the current job to finish.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="189"/>
+        <location filename="../src/MainWindow.cpp" line="193"/>
         <source>Generating portraits</source>
         <translation>Generating portraits</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="206"/>
+        <location filename="../src/MainWindow.cpp" line="210"/>
         <source>Generating portrait</source>
         <translation>Generating portrait</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="207"/>
+        <location filename="../src/MainWindow.cpp" line="211"/>
         <source>Generating portrait %1 of %2</source>
         <translation>Generating portrait %1 of %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="213"/>
-        <location filename="../src/MainWindow.cpp" line="454"/>
+        <location filename="../src/MainWindow.cpp" line="217"/>
+        <location filename="../src/MainWindow.cpp" line="468"/>
         <source>Generation failed</source>
         <translation>Generation failed</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="213"/>
+        <location filename="../src/MainWindow.cpp" line="217"/>
         <source>The service could not accept the portrait request.</source>
         <translation>The service could not accept the portrait request.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="195"/>
-        <location filename="../src/MainWindow.cpp" line="201"/>
+        <location filename="../src/MainWindow.cpp" line="199"/>
+        <location filename="../src/MainWindow.cpp" line="205"/>
         <source>Portrait generation failed</source>
         <translation>Portrait generation failed</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="201"/>
+        <location filename="../src/MainWindow.cpp" line="205"/>
         <source>The service could not accept the translation request.</source>
         <translation>The service could not accept the translation request.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="238"/>
-        <location filename="../src/MainWindow.cpp" line="249"/>
-        <location filename="../src/MainWindow.cpp" line="427"/>
+        <location filename="../src/MainWindow.cpp" line="242"/>
+        <location filename="../src/MainWindow.cpp" line="253"/>
+        <location filename="../src/MainWindow.cpp" line="431"/>
         <source>Submitting…</source>
         <translation>Submitting…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="418"/>
+        <location filename="../src/MainWindow.cpp" line="422"/>
         <source>Upscaling image</source>
         <translation>Upscaling image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="517"/>
-        <location filename="../src/MainWindow.cpp" line="532"/>
+        <location filename="../src/MainWindow.cpp" line="531"/>
+        <location filename="../src/MainWindow.cpp" line="546"/>
         <source>Avoid: %1</source>
         <translation>Avoid: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="529"/>
+        <location filename="../src/MainWindow.cpp" line="543"/>
         <source>Shot: %1 · Ratio: %2</source>
         <translation>Shot: %1 · Ratio: %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="338"/>
+        <location filename="../src/MainWindow.cpp" line="342"/>
         <source>Replaced</source>
         <translation>Replaced</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="341"/>
+        <location filename="../src/MainWindow.cpp" line="345"/>
         <source>Negative prompt: %1</source>
         <translation>Negative prompt: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="343"/>
+        <location filename="../src/MainWindow.cpp" line="347"/>
         <source>Create the image</source>
         <translation>Create the image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="286"/>
+        <location filename="../src/MainWindow.cpp" line="290"/>
         <source>Created</source>
         <translation>Created</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="283"/>
+        <location filename="../src/MainWindow.cpp" line="287"/>
         <source>The service could not accept the generation.</source>
         <translation>The service could not accept the generation.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="534"/>
+        <location filename="../src/MainWindow.cpp" line="548"/>
         <source>%1 cannot use reference images: they will be left out.</source>
         <translation>%1 cannot use reference images: they will be left out.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="339"/>
+        <location filename="../src/MainWindow.cpp" line="343"/>
         <source>Prompt: %1</source>
         <translation>Prompt: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="427"/>
+        <location filename="../src/MainWindow.cpp" line="431"/>
         <source>Animation</source>
         <translation>Animation</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="540"/>
+        <location filename="../src/MainWindow.cpp" line="446"/>
+        <source>LoRA training failed</source>
+        <translation>LoRA training failed</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="554"/>
         <source>Attach the image to change as the base image with the + button, then send your request again.</source>
         <translation>Attach the image to change as the base image with the + button, then send your request again.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="541"/>
+        <location filename="../src/MainWindow.cpp" line="555"/>
         <source>Next step, not run yet: edit the base image.</source>
         <translation>Next step, not run yet: edit the base image.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="542"/>
+        <location filename="../src/MainWindow.cpp" line="556"/>
         <source>Next step, not run yet: edit the displayed image.</source>
         <translation>Next step, not run yet: edit the displayed image.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="543"/>
+        <location filename="../src/MainWindow.cpp" line="557"/>
         <source>Instruction: %1</source>
         <translation>Instruction: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="547"/>
+        <location filename="../src/MainWindow.cpp" line="561"/>
         <source>the base image</source>
         <translation>the base image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="548"/>
+        <location filename="../src/MainWindow.cpp" line="562"/>
         <source>the displayed image</source>
         <translation>the displayed image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="549"/>
+        <location filename="../src/MainWindow.cpp" line="563"/>
         <source>reference %1</source>
         <translation>reference %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="550"/>
+        <location filename="../src/MainWindow.cpp" line="564"/>
         <source>Next step, not run yet: show %1 to the image describer.</source>
         <translation>Next step, not run yet: show %1 to the image describer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="551"/>
+        <location filename="../src/MainWindow.cpp" line="565"/>
         <source>Question: %1</source>
         <translation>Question: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="347"/>
+        <location filename="../src/MainWindow.cpp" line="351"/>
         <source>Kira Sparkle could not start planning your request.</source>
         <translation>Kira Sparkle could not start planning your request.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="452"/>
+        <location filename="../src/MainWindow.cpp" line="466"/>
         <source>Upscale failed</source>
         <translation>Upscale failed</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="453"/>
+        <location filename="../src/MainWindow.cpp" line="467"/>
         <source>Edit failed</source>
         <translation>Edit failed</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="629"/>
+        <location filename="../src/MainWindow.cpp" line="606"/>
+        <source>Training the LoRA %1</source>
+        <translation>Training the LoRA %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="613"/>
+        <source>A LoRA is training</source>
+        <translation>A LoRA is training</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="617"/>
+        <source>A LoRA is being trained. Closing Kaimera stops the training, and the LoRA will not be created.</source>
+        <translation>A LoRA is being trained. Closing Kaimera stops the training, and the LoRA will not be created.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="623"/>
+        <source>Keep training</source>
+        <translation>Keep training</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="626"/>
+        <source>Close and stop the training</source>
+        <translation>Close and stop the training</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="687"/>
         <source>Open Image</source>
         <translation>Open Image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="629"/>
+        <location filename="../src/MainWindow.cpp" line="687"/>
         <source>Images (%1)</source>
         <translation>Images (%1)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="634"/>
+        <location filename="../src/MainWindow.cpp" line="692"/>
         <source>Could not open image</source>
         <translation>Could not open image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="642"/>
+        <location filename="../src/MainWindow.cpp" line="700"/>
         <source>PNG sprite sheet (*.png)</source>
         <translation>PNG sprite sheet (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="644"/>
+        <location filename="../src/MainWindow.cpp" line="702"/>
         <source>Save Animation</source>
         <translation>Save Animation</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="641"/>
+        <location filename="../src/MainWindow.cpp" line="699"/>
         <source>MP4 video (*.mp4)</source>
         <translation>MP4 video (*.mp4)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="661"/>
-        <location filename="../src/MainWindow.cpp" line="667"/>
+        <location filename="../src/MainWindow.cpp" line="719"/>
+        <location filename="../src/MainWindow.cpp" line="725"/>
         <source>Could not save animation</source>
         <translation>Could not save animation</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="674"/>
+        <location filename="../src/MainWindow.cpp" line="732"/>
         <source>Save Image</source>
         <translation>Save Image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="677"/>
+        <location filename="../src/MainWindow.cpp" line="735"/>
         <source>%1 image (*.%2)</source>
         <translation>%1 image (*.%2)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="683"/>
+        <location filename="../src/MainWindow.cpp" line="741"/>
         <source>Could not save image</source>
         <translation>Could not save image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="221"/>
+        <location filename="../src/MainWindow.cpp" line="225"/>
         <source>Save identity</source>
         <translation>Save identity</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="466"/>
+        <location filename="../src/MainWindow.cpp" line="480"/>
         <source>Upscaled image</source>
         <translation>Upscaled image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="249"/>
-        <location filename="../src/MainWindow.cpp" line="467"/>
+        <location filename="../src/MainWindow.cpp" line="253"/>
+        <location filename="../src/MainWindow.cpp" line="481"/>
         <source>Edited image</source>
         <translation>Edited image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="182"/>
+        <location filename="../src/MainWindow.cpp" line="186"/>
         <source>Create identity from a prompt…</source>
         <translation>Create identity from a prompt…</translation>
     </message>
@@ -2397,6 +2470,170 @@ Editing: %2</translation>
         <location filename="../src/SparklePlanner.h" line="445"/>
         <source>Kira Sparkle did not say what to look at.</source>
         <translation>Kira Sparkle did not say what to look at.</translation>
+    </message>
+</context>
+<context>
+    <name>TrainLoraDialog</name>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="28"/>
+        <source>Train a LoRA</source>
+        <translation>Train a LoRA</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="36"/>
+        <source>Pick a folder of images of a character or a style. Kaimera trains a LoRA from them, which you can then use to generate images.</source>
+        <translation>Pick a folder of images of a character or a style. Kaimera trains a LoRA from them, which you can then use to generate images.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="47"/>
+        <source>Choose folder…</source>
+        <translation>Choose folder…</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="50"/>
+        <source>No folder chosen</source>
+        <translation>No folder chosen</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="59"/>
+        <source>Images</source>
+        <translation>Images</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="65"/>
+        <source>Letters, digits, _ and - only, 64 characters at most</source>
+        <translation>Letters, digits, _ and - only, 64 characters at most</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="66"/>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="71"/>
+        <source>The word that calls the LoRA in a prompt</source>
+        <translation>The word that calls the LoRA in a prompt</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="72"/>
+        <source>Trigger word</source>
+        <translation>Trigger word</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="78"/>
+        <source>Base model</source>
+        <translation>Base model</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="79"/>
+        <source>The base model must be an SDXL checkpoint.</source>
+        <translation>The base model must be an SDXL checkpoint.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="88"/>
+        <source>More steps take longer: a training can last tens of minutes</source>
+        <translation>More steps take longer: a training can last tens of minutes</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="89"/>
+        <source>Training steps</source>
+        <translation>Training steps</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="101"/>
+        <source>Train</source>
+        <translation>Train</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="131"/>
+        <source>Choose the image folder</source>
+        <translation>Choose the image folder</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="161"/>
+        <source>Choose a folder of PNG or JPEG images.</source>
+        <translation>Choose a folder of PNG or JPEG images.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="162"/>
+        <source>This folder holds no PNG or JPEG image.</source>
+        <translation>This folder holds no PNG or JPEG image.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="164"/>
+        <source>A LoRA is trained from %1 images at most; this folder holds %2.</source>
+        <translation>A LoRA is trained from %1 images at most; this folder holds %2.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="167"/>
+        <source>Enter a name for the LoRA.</source>
+        <translation>Enter a name for the LoRA.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="169"/>
+        <source>The name can hold only letters, digits, _ and -, up to %1 characters.</source>
+        <translation>The name can hold only letters, digits, _ and -, up to %1 characters.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="173"/>
+        <source>A model named %1 is already installed. Choose another name.</source>
+        <translation>A model named %1 is already installed. Choose another name.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="175"/>
+        <source>Enter a trigger word.</source>
+        <translation>Enter a trigger word.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="177"/>
+        <source>The trigger word can hold %1 characters at most.</source>
+        <translation>The trigger word can hold %1 characters at most.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="179"/>
+        <source>The trigger word cannot hold &lt;, &gt; or a comma.</source>
+        <translation>The trigger word cannot hold &lt;, &gt; or a comma.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="182"/>
+        <source>The caption of %1 holds more than %2 characters. Shorten its .txt file.</source>
+        <translation>The caption of %1 holds more than %2 characters. Shorten its .txt file.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="184"/>
+        <source>No SDXL checkpoint is installed.</source>
+        <translation>No SDXL checkpoint is installed.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="185"/>
+        <source>Wait for the current job to finish.</source>
+        <translation>Wait for the current job to finish.</translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="196"/>
+        <source>%1, %2</source>
+        <translation>%1, %2</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/TrainLoraDialog.cpp" line="196"/>
+        <source>%n image(s)</source>
+        <translation>
+            <numerusform>%n image</numerusform>
+            <numerusform>%n images</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/TrainLoraDialog.cpp" line="197"/>
+        <source>%n caption(s)</source>
+        <translation>
+            <numerusform>%n caption</numerusform>
+            <numerusform>%n captions</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/TrainLoraDialog.cpp" line="217"/>
+        <source>Could not read %1: %2</source>
+        <translation>Could not read %1: %2</translation>
     </message>
 </context>
 </TS>

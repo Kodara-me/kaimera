@@ -31,6 +31,9 @@ private:
     void restoreWindowState();
     void saveWindowState();
     void showMessage(const QString& title, const QString& message);
+    void trainLora();
+    // Whether closing may go on: asks first while a LoRA training is queued or running.
+    bool confirmCloseDuringTraining();
     void openImage();
     void saveImage();
     CanvasServiceController* m_serviceClient = nullptr;

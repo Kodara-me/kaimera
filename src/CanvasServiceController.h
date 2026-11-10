@@ -99,6 +99,28 @@ public:
         const QList<QImage>& references = {}, const QString& identityPrompt = {}, const ShotPrompts::Prefix& shot = {},
         bool translatePrompts = true);
     int queuedGenerationCount() const { return int(m_queued.size()); }
+    // LoRA training: lora.train with the images uploaded one by one, as the single active job (the
+    // service runs it alone, for tens of minutes). It reports its stage and percentage through
+    // generationStatusChanged and ends with loraTrainingFinished, whose message carries the trainer's
+    // diagnostics on a failure, a lost connection included. On success, the models are refreshed and
+    // the trigger word and the base model are remembered under the model id of the new LoRA.
+    bool canTrainLoras() const;
+    // The installed checkpoints that can be a training's base model (LoraDataset::baseModels).
+    QList<Nukleus::ModelInfo> loraBaseModels() const;
+    // Why a LoRA cannot be trained now, or empty when it can (a running job is not an issue here:
+    // the training form states it).
+    QString trainLoraIssue() const;
+    bool trainLora(const Nukleus::LoraTrainingRequest& request, const QString& triggerWord);
+    // A LoRA training is submitting its images, queued or running.
+    bool loraTrainingActive() const { return m_training.has_value(); }
+    // What Kaimera remembers of a LoRA it trained, keyed by its model id in the group Loras of the
+    // application settings.
+    struct RememberedLora
+    {
+        QString triggerWord;
+        QString baseModelId;
+    };
+    static std::optional<RememberedLora> rememberedLora(const QString& modelId);
     // Animation: image.animate with MP4 output and an installed animation model with all its
     // files. Why the selected image cannot be animated, or empty when it can.
     QString animateIssue() const;
@@ -131,6 +153,8 @@ signals:
     void queuedGenerationFinished(const QUuid& ticket, const Nukleus::ImageJobResult& result);
     // A queued animation's video, or its failure; prompt is the English prompt it was sent with.
     void queuedAnimationFinished(const QUuid& ticket, const Nukleus::AnimationResult& result, const QString& prompt);
+    // The LoRA training ended: succeeded, or failed with the message of the service.
+    void loraTrainingFinished(const Nukleus::LoraTrainingResult& result);
 
 private:
     QString translatorId() const;
@@ -197,6 +221,13 @@ private:
         QString prompt;
     };
     QHash<QString, QueuedGeneration> m_queued;
+    // The LoRA training holding the single-job guard (its job ID is m_generationJobId).
+    struct Training
+    {
+        QString triggerWord;
+        QString baseModelId;
+    };
+    std::optional<Training> m_training;
     void handleState(Nukleus::ServiceConnectionState state, const QString &code, const QString &detail);
     Nukleus::ServiceClient *m_client;
     QUrl m_endpoint;

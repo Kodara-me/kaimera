@@ -104,8 +104,8 @@ system locales, English otherwise.
   image selections and application restarts. Manual zoom/100% exits fit mode.
   The icon toolbar above the
   preview offers fit/actual-size toggle, zoom out/in, 100%, crop, Upscale 2×,
-  Downscale 2×, Improve sharpness, Animate, then a section with New identity and Edit with
-  an identity, and Save as. Improve
+  Downscale 2×, Improve sharpness, Animate, then a section with New identity, Edit with
+  an identity and Train a LoRA, and Save as. Improve
   sharpness edits the selected image with the default editing quality's model and
   fixed prompts for a light, natural sharpening pass (no quality prefixes, no LLM),
   adding the result to history; run it again on the result for a stronger effect.
@@ -179,6 +179,25 @@ system locales, English otherwise.
   2D game engines that animate sprite sheets; its suggested name ends with the grid,
   such as `animation-3x2.png` (3 columns, 2 rows). Right-click offers Open, Save,
   Copy prompt and Delete. Animations stay in memory until saved.
+- **Train a LoRA…** (the upload icon after Edit with an identity in the toolbar; **Entraîner
+  un LoRA…** in French) creates a LoRA from a folder of images. It needs a Nukleus service
+  that trains LoRAs and at least one installed SDXL checkpoint (a `.safetensors` file);
+  otherwise it is disabled and its tooltip says what is missing. It works with no image
+  selected. The form asks for the image folder (PNG and JPEG files placed directly in it,
+  1 to 64, sorted by name; it shows how many there are and how many have a caption), the
+  LoRA's name (letters, digits, `_` and `-`, filled from the folder name; it must differ
+  from every installed companion model), its trigger word (the word that calls the LoRA in
+  a prompt, at most 100 characters, no `<`, `>` or comma; it follows the name until you
+  edit it), the base model (an SDXL checkpoint, preselected from the New image card) and
+  the number of steps (1 to 20000, 1500 by default). Each image is captioned with the
+  trigger word; a `.txt` file with the same base name next to an image adds its text after
+  the trigger word. The status line under the form says what keeps **Train** disabled.
+  Training is a single job that can last tens of minutes: the progress pill shows
+  "Training the LoRA <name>" with its stage and percentage, and other single jobs wait. When
+  it succeeds, the LoRA appears among the installed companion models in Available Models and
+  Kaimera remembers its trigger word and base model; when it fails, or the connection is
+  lost, the pill shows the service's message and nothing is remembered. Closing Kaimera
+  during a training asks for confirmation, because closing stops it.
 - **Kira Sparkle** is the ✨ bubble in the preview's lower-right corner. It opens a
   chat to its left that greets you with "How can I help you?": the conversation, a
   two-line request field (Enter sends, Shift+Enter adds a line; Escape, the bubble or

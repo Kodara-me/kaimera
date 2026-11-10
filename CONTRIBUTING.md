@@ -111,10 +111,10 @@ Kaimera uses the sibling `../nukleus` checkout by default. To use another checko
 cmake -S . -B build -G Ninja -DNUKLEUS_SOURCE_DIR=/path/to/nukleus
 ```
 
-Without a valid checkout, CMake uses an installed `NukleusSdk` 0.3 package when
+Without a valid checkout, CMake uses an installed `NukleusSdk` 0.6 package when
 found (add its prefix with `-DCMAKE_PREFIX_PATH=/path/to/nukleus-install`), otherwise
-it clones the SDK of Nukleus tag `v0.3.0`, the first with `image.animate` and its MP4
-output; CI and releases build that way. Set
+it clones the SDK of Nukleus tag `v0.6.0`, the first with LoRA training and LoRA
+generation; CI and releases build that way. Set
 `-DNUKLEUS_SOURCE_DIR` to a path without `src/sdk` to skip the sibling checkout.
 Every mode provides `Nukleus::SDK`; Kaimera never builds the daemon or manager.
 

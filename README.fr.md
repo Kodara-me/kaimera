@@ -37,6 +37,11 @@ résultats. Il parle français et anglais, selon la langue du système.
 - **Identités** : des portraits de face, de profil et de trois quarts d'une même personne à
   partir d'une description écrite, enregistrés dans un paquet `.kiraid`, puis joints aux
   nouvelles images ou appliqués aux retouches.
+- **LoRA** : **Entraîner un LoRA** dans la barre d'outils crée un LoRA à partir d'un
+  dossier d'images : vous choisissez le dossier, un nom, un mot déclencheur, un modèle de
+  base SDXL et le nombre d'étapes, et Kaimera l'entraîne sur le service en montrant la
+  progression dans la pastille, puis le range parmi les modèles installés. Un fichier
+  `.txt` à côté d'une image complète sa légende.
 - **Kira Sparkle** : un chat qui comprend une demande, pose une question quand elle est
   floue, propose une image avec son cadrage, son format et son prompt, et la crée quand
   vous acceptez.

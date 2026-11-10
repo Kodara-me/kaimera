@@ -62,6 +62,10 @@ public:
     void setAnimateAvailability(const QString& issue, const QList<AnimateForm::Model>& models, bool pingPong);
     // Whether the Animate form can submit now, apart from its prompt (a single job blocks it).
     void setAnimateSubmitAvailable(bool available, const QString& issue = {});
+    // Whether a LoRA can be trained now, and the reason when it cannot, shown as the tooltip of the
+    // Train a LoRA button; the button never depends on the selected image.
+    void setTrainLoraAvailability(const QString& issue);
+    QToolButton* trainLoraButton() const { return m_trainLoraButton; }
     // Shows a queued history image in Kira Sparkle's conversation, in the size's ratio; the
     // conversation then follows its progress.
     void showSparkleResult(const QUuid& id, const QSize& size);
@@ -110,6 +114,8 @@ signals:
     void saveAsRequested();
     void openRequested();
     void servicePreferencesRequested();
+    // The Train a LoRA button was clicked: the main window opens the training form.
+    void trainLoraRequested();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -152,6 +158,7 @@ private:
     QToolButton* m_downscaleButton;
     QToolButton* m_sharpenButton;
     QToolButton* m_identityEditButton;
+    QToolButton* m_trainLoraButton;
     QTemporaryDir m_externalImages;
     GenerationPreviewWidget* m_preview;
     GenerationHistoryWidget* m_history;
